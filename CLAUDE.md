@@ -109,8 +109,19 @@ The main process is the single source of truth. `project:open` triggers full dis
 
 ## Milestones
 
-0. **Integration proof** — validate PTY, Claude CLI, session storage, worktree discovery
-1. **Single-session core** — one Claude session, reliable PTY, basic state detection
-2. **Multi-session lifecycle** — create/switch/resume/stop multiple sessions
-3. **Worktree discovery + shell** — grouped session list by worktree, separate shell PTY
+0. **Integration proof** — COMPLETE. Spikes validated.
+1. **Single-session core** — BUILT. Awaiting SentinelOne exclusion for end-to-end testing.
+2. **Multi-session lifecycle** — BUILT. Resume, rename, metadata persistence.
+3. **Worktree discovery + shell** — BUILT. Grouped sidebar, shell panel with Ctrl+`.
 4. **Read-only context** — file tree, file preview (only if 0-3 are stable)
+
+## Keyboard Shortcuts
+
+- `Ctrl+N` — new session (in active worktree)
+- `Ctrl+1` through `Ctrl+8` — focus session by flat visual index
+- `Ctrl+Tab` / `Ctrl+Shift+Tab` — next/prev session
+- `Ctrl+\`` — toggle shell panel
+
+## Known Issues
+
+- SentinelOne EDR blocks Electron from spawning claude.exe via ConPTY (exit code 0xC0000022). Requires exclusion for the Electron dev binary or project directory.

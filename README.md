@@ -61,14 +61,24 @@ npm run spike:worktrees    # Git worktree discovery
 npm run spike:parser       # Terminal output parsing
 ```
 
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+N` | New session (in active worktree) |
+| `Ctrl+1`-`8` | Focus session by index |
+| `Ctrl+Tab` | Next session |
+| `Ctrl+Shift+Tab` | Previous session |
+| `Ctrl+\`` | Toggle shell panel |
+
 ## Roadmap
 
 | Milestone | Goal | Status |
 |-----------|------|--------|
-| 0 | Integration proof — validate PTY, CLI, storage, worktrees | In progress |
-| 1 | Single-session core — one reliable Claude PTY session | Planned |
-| 2 | Multi-session lifecycle — create/switch/resume/stop | Planned |
-| 3 | Worktree discovery + shell — grouped sessions, user shell | Planned |
+| 0 | Integration proof — validate PTY, CLI, storage, worktrees | Complete |
+| 1 | Single-session core — one reliable Claude PTY session | Built |
+| 2 | Multi-session lifecycle — create/switch/resume/stop | Built |
+| 3 | Worktree discovery + shell — grouped sessions, user shell | Built |
 | 4 | Read-only context — file tree, preview | Future |
 
 ## License

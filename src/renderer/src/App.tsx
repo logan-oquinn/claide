@@ -39,20 +39,58 @@ export default function App() {
     return removeListener
   }, [])
 
-  // Keyboard shortcut: Ctrl+` toggle shell
+  const allSessions = state ? flatSessions(state) : []
+  const runningSessions = allSessions.filter(s => s.lifecycle === 'running')
+
+  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Ctrl+` — toggle shell
       if (e.ctrlKey && e.key === '`') {
         e.preventDefault()
         setShellOpen(prev => !prev)
+        return
+      }
+
+      // Ctrl+N — new session in the active worktree (or root)
+      if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault()
+        if (state?.claudeAvailable) {
+          // Find the worktree of the active session, or use root
+          const activeWt = state.worktrees.find(wt =>
+            wt.sessions.some(s => s.uuid === activeSessionUuid)
+          )
+          const cwd = activeWt?.path || state.rootPath
+          handleNewSession(cwd)
+        }
+        return
+      }
+
+      // Ctrl+1 through Ctrl+8 — focus session by flat visual index
+      if (e.ctrlKey && e.key >= '1' && e.key <= '8') {
+        e.preventDefault()
+        const index = parseInt(e.key) - 1
+        if (index < allSessions.length) {
+          setActiveSessionUuid(allSessions[index].uuid)
+        }
+        return
+      }
+
+      // Ctrl+Tab / Ctrl+Shift+Tab — next/prev session
+      if (e.ctrlKey && e.key === 'Tab') {
+        e.preventDefault()
+        if (allSessions.length === 0) return
+        const currentIdx = allSessions.findIndex(s => s.uuid === activeSessionUuid)
+        const next = e.shiftKey
+          ? (currentIdx - 1 + allSessions.length) % allSessions.length
+          : (currentIdx + 1) % allSessions.length
+        setActiveSessionUuid(allSessions[next].uuid)
+        return
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [])
-
-  const allSessions = state ? flatSessions(state) : []
-  const runningSessions = allSessions.filter(s => s.lifecycle === 'running')
+  }, [state, activeSessionUuid, allSessions, handleNewSession])
 
   const handleNewSession = useCallback(async (cwd: string) => {
     if (!cwd) return

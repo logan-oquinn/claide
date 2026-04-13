@@ -1,0 +1,23 @@
+appId: com.claide.app
+productName: Claide
+directories:
+  buildResources: build
+  output: dist
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.*'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!documentation/*'
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  executableName: Claide
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: Claide
+  uninstallDisplayName: Claide
+  createDesktopShortcut: always
