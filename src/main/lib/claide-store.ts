@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
+import { readFileSync, writeFile, existsSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 
 interface SessionMeta {
@@ -51,6 +51,7 @@ export function readMetadata(rootPath: string): ClaideMetadata {
 /**
  * Write .claide/sessions.json to the project root.
  * Creates the .claide directory if it doesn't exist.
+ * Non-blocking — uses async write to avoid freezing the main thread.
  */
 export function writeMetadata(rootPath: string, metadata: ClaideMetadata): void {
   const path = metadataPath(rootPath)
@@ -60,7 +61,8 @@ export function writeMetadata(rootPath: string, metadata: ClaideMetadata): void 
     mkdirSync(dir, { recursive: true })
   }
 
-  writeFileSync(path, JSON.stringify(metadata, null, 2), 'utf-8')
+  // Async write — fire and forget, don't block the UI
+  writeFile(path, JSON.stringify(metadata, null, 2), 'utf-8', () => {})
 }
 
 /**

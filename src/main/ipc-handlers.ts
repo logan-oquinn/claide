@@ -21,6 +21,9 @@ import type {
 
 let currentRootPath = ''
 let currentMetadata = readMetadata('')
+let cachedWorktrees: ReturnType<typeof discoverWorktrees> = []
+let cachedIsGitRepo = false
+let stateRebuildTimer: ReturnType<typeof setTimeout> | null = null
 
 /**
  * Register all IPC handlers and wire them to the SessionManager.
@@ -49,10 +52,15 @@ export function registerIpcHandlers(
 
   sessionManager.on('lifecycle', (uuid: string, lifecycle: string, error?: string) => {
     sendToRenderer(IPC.SESSION_LIFECYCLE, { uuid, lifecycle, error })
-    sendToRenderer(IPC.PROJECT_STATE, buildProjectState(sessionManager, currentRootPath, currentMetadata))
+    // Debounce state rebuilds — multiple rapid lifecycle events get batched
+    if (stateRebuildTimer) clearTimeout(stateRebuildTimer)
+    stateRebuildTimer = setTimeout(() => {
+      sendToRenderer(IPC.PROJECT_STATE, buildProjectState(sessionManager, currentRootPath, currentMetadata))
+      stateRebuildTimer = null
+    }, 100)
   })
 
-  // project:open
+  // project:open — the only place we do expensive discovery
   ipcMain.handle(IPC.PROJECT_OPEN, (_event, rootPath: string): ProjectState => {
     currentRootPath = rootPath
     currentMetadata = readMetadata(rootPath)
@@ -66,6 +74,10 @@ export function registerIpcHandlers(
         error: `Directory not found: ${rootPath}`
       }
     }
+
+    // Cache expensive discovery results — only refresh on project:open
+    cachedIsGitRepo = isGitRepo(rootPath)
+    cachedWorktrees = cachedIsGitRepo ? discoverWorktrees(rootPath) : []
 
     addRecentProject(rootPath)
     return buildProjectState(sessionManager, rootPath, currentMetadata)
@@ -141,12 +153,12 @@ function buildProjectState(
   rootPath: string,
   metadata: ReturnType<typeof readMetadata>
 ): ProjectState {
-  const claudePath = findClaudePath()
-  const claudeVersion = claudePath ? getClaudeVersion() ?? undefined : undefined
-  const gitRepo = isGitRepo(rootPath)
+  // Use cached values — expensive lookups only happen on project:open
+  const claudePath = findClaudePath()  // cached after first call
+  const claudeVersion = claudePath ? getClaudeVersion() ?? undefined : undefined  // cached after first call
 
-  // Discover worktrees (or just the root if not a git repo)
-  const rawWorktrees = gitRepo ? discoverWorktrees(rootPath) : []
+  // Use cached worktree data (refreshed only on project:open)
+  const rawWorktrees = cachedWorktrees
 
   // Build worktree list — if not git, treat root as a single "worktree"
   const worktreePaths = rawWorktrees.length > 0
@@ -217,7 +229,7 @@ function buildProjectState(
     rootPath,
     claudeAvailable: claudePath !== null,
     claudeVersion,
-    isGitRepo: gitRepo,
+    isGitRepo: cachedIsGitRepo,
     worktrees,
   }
 }

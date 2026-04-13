@@ -35,22 +35,30 @@ export function findClaudePath(): string | null {
   }
 }
 
+let cachedVersion: string | null | undefined
+
 /**
  * Get Claude CLI version string, or null if not available.
+ * Cached for app lifetime — version doesn't change mid-session.
  */
 export function getClaudeVersion(): string | null {
+  if (cachedVersion !== undefined) return cachedVersion
+
   try {
     const claudePath = findClaudePath()
-    if (!claudePath) return null
-    return execSync(`"${claudePath}" --version`, { encoding: 'utf-8' }).trim()
+    if (!claudePath) { cachedVersion = null; return null }
+    cachedVersion = execSync(`"${claudePath}" --version`, { encoding: 'utf-8' }).trim()
+    return cachedVersion
   } catch {
+    cachedVersion = null
     return null
   }
 }
 
 /**
- * Clear the cached path (useful if user changes settings).
+ * Clear all cached values (useful if user changes settings).
  */
 export function clearClaudePathCache(): void {
   cachedPath = undefined
+  cachedVersion = undefined
 }
