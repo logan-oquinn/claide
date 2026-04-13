@@ -195,6 +195,101 @@ body {
   color: #f87171;
 }
 
+/* Worktree groups */
+.worktree-group {
+  margin-bottom: 2px;
+}
+
+.worktree-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 11px;
+  color: #8080a0;
+  border-radius: 4px;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.worktree-header:hover {
+  background: #1e1e36;
+}
+
+.worktree-header.main {
+  color: #a0a0c0;
+}
+
+.worktree-chevron {
+  font-size: 9px;
+  width: 12px;
+}
+
+.worktree-branch {
+  font-weight: 600;
+  color: #9090b8;
+}
+
+.worktree-header.main .worktree-branch {
+  color: #b0b0d0;
+}
+
+.worktree-path {
+  flex: 1;
+  text-align: right;
+  color: #505070;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.worktree-warn {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+.worktree-lock {
+  color: #60a5fa;
+  font-size: 10px;
+}
+
+.worktree-add-btn {
+  background: none;
+  border: none;
+  color: #606080;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.worktree-header:hover .worktree-add-btn {
+  opacity: 1;
+}
+
+.worktree-add-btn:hover {
+  color: #6c63ff;
+}
+
+.worktree-sessions {
+  padding-left: 4px;
+}
+
+.worktree-empty {
+  color: #404060;
+  font-size: 11px;
+  padding: 4px 12px 8px;
+}
+
+.claude-version {
+  font-size: 10px;
+  color: #505070;
+}
+
 /* Main content area */
 .main-content {
   flex: 1;
@@ -203,14 +298,77 @@ body {
   overflow: hidden;
 }
 
-.terminal-container {
+.terminal-area {
   flex: 1;
   position: relative;
   overflow: hidden;
 }
 
+.terminal-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
 .terminal-container .xterm {
   height: 100%;
+}
+
+/* Shell panel */
+.shell-area {
+  height: 200px;
+  min-height: 100px;
+  border-top: 1px solid #2a2a4a;
+  display: flex;
+  flex-direction: column;
+}
+
+.shell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+  background: #141425;
+  font-size: 11px;
+  color: #8080a0;
+  border-bottom: 1px solid #2a2a4a;
+}
+
+.shell-close-btn {
+  background: none;
+  border: none;
+  color: #606080;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 4px;
+}
+
+.shell-close-btn:hover {
+  color: #f87171;
+}
+
+.shell-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+.shell-toggle-bar {
+  background: #141425;
+  border: none;
+  border-top: 1px solid #2a2a4a;
+  color: #606080;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 4px 12px;
+  text-align: left;
+  transition: color 0.15s;
+}
+
+.shell-toggle-bar:hover {
+  color: #a0a0c0;
 }
 
 /* Empty state */

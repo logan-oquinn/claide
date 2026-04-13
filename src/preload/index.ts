@@ -20,6 +20,11 @@ export interface ClaideAPI {
   onSessionData(callback: (event: SessionDataEvent) => void): () => void
   onSessionLifecycle(callback: (event: SessionLifecycleEvent) => void): () => void
   onProjectState(callback: (state: ProjectState) => void): () => void
+  // Shell
+  createShell(cwd: string): Promise<void>
+  sendShellInput(data: string): void
+  resizeShell(cols: number, rows: number): void
+  onShellData(callback: (data: string) => void): () => void
 }
 
 const api: ClaideAPI = {
@@ -71,6 +76,25 @@ const api: ClaideAPI = {
     const handler = (_: unknown, state: ProjectState) => callback(state)
     ipcRenderer.on(IPC.PROJECT_STATE, handler)
     return () => ipcRenderer.removeListener(IPC.PROJECT_STATE, handler)
+  },
+
+  // Shell
+  createShell(cwd: string) {
+    return ipcRenderer.invoke(IPC.SHELL_CREATE, cwd)
+  },
+
+  sendShellInput(data: string) {
+    ipcRenderer.send(IPC.SHELL_INPUT, data)
+  },
+
+  resizeShell(cols: number, rows: number) {
+    ipcRenderer.send(IPC.SHELL_RESIZE, { cols, rows })
+  },
+
+  onShellData(callback: (data: string) => void) {
+    const handler = (_: unknown, data: string) => callback(data)
+    ipcRenderer.on(IPC.SHELL_DATA, handler)
+    return () => ipcRenderer.removeListener(IPC.SHELL_DATA, handler)
   }
 }
 

@@ -1,10 +1,14 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { SessionManager } from './session-manager'
+import { ShellManager } from './shell-manager'
 import { registerIpcHandlers } from './ipc-handlers'
+import { IPC } from '../shared/types'
+import type { ShellResizePayload } from '../shared/types'
 
 let mainWindow: BrowserWindow | null = null
 const sessionManager = new SessionManager()
+const shellManager = new ShellManager()
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -31,16 +35,43 @@ function createWindow(): void {
   })
 }
 
+function registerShellIpc(): void {
+  function sendToRenderer(channel: string, ...args: unknown[]) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send(channel, ...args)
+    }
+  }
+
+  shellManager.on('data', (data: string) => {
+    sendToRenderer(IPC.SHELL_DATA, data)
+  })
+
+  ipcMain.handle(IPC.SHELL_CREATE, (_event, cwd: string) => {
+    shellManager.create(cwd)
+  })
+
+  ipcMain.on(IPC.SHELL_INPUT, (_event, data: string) => {
+    shellManager.write(data)
+  })
+
+  ipcMain.on(IPC.SHELL_RESIZE, (_event, payload: ShellResizePayload) => {
+    shellManager.resize(payload.cols, payload.rows)
+  })
+}
+
 app.whenReady().then(() => {
   registerIpcHandlers(sessionManager, () => mainWindow)
+  registerShellIpc()
   createWindow()
 })
 
 app.on('window-all-closed', () => {
   sessionManager.destroyAll()
+  shellManager.destroy()
   app.quit()
 })
 
 app.on('before-quit', () => {
   sessionManager.destroyAll()
+  shellManager.destroy()
 })
