@@ -1,5 +1,65 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
+import { IPC } from '../shared/types'
+import type {
+  ProjectState,
+  SessionCreatePayload,
+  SessionDataEvent,
+  SessionLifecycleEvent
+} from '../shared/types'
 
-contextBridge.exposeInMainWorld('claide', {
-  platform: process.platform
-})
+export interface ClaideAPI {
+  platform: string
+  openProject(rootPath: string): Promise<ProjectState>
+  createSession(cwd: string, name?: string): Promise<ProjectState>
+  sendInput(uuid: string, data: string): void
+  resizeSession(uuid: string, cols: number, rows: number): void
+  stopSession(uuid: string): Promise<ProjectState>
+  onSessionData(callback: (event: SessionDataEvent) => void): () => void
+  onSessionLifecycle(callback: (event: SessionLifecycleEvent) => void): () => void
+  onProjectState(callback: (state: ProjectState) => void): () => void
+}
+
+const api: ClaideAPI = {
+  platform: process.platform,
+
+  openProject(rootPath: string) {
+    return ipcRenderer.invoke(IPC.PROJECT_OPEN, rootPath)
+  },
+
+  createSession(cwd: string, name?: string) {
+    const payload: SessionCreatePayload = { cwd, name }
+    return ipcRenderer.invoke(IPC.SESSION_CREATE, payload)
+  },
+
+  sendInput(uuid: string, data: string) {
+    ipcRenderer.send(IPC.SESSION_INPUT, { uuid, data })
+  },
+
+  resizeSession(uuid: string, cols: number, rows: number) {
+    ipcRenderer.send(IPC.SESSION_RESIZE, { uuid, cols, rows })
+  },
+
+  stopSession(uuid: string) {
+    return ipcRenderer.invoke(IPC.SESSION_STOP, { uuid })
+  },
+
+  onSessionData(callback: (event: SessionDataEvent) => void) {
+    const handler = (_: unknown, event: SessionDataEvent) => callback(event)
+    ipcRenderer.on(IPC.SESSION_DATA, handler)
+    return () => ipcRenderer.removeListener(IPC.SESSION_DATA, handler)
+  },
+
+  onSessionLifecycle(callback: (event: SessionLifecycleEvent) => void) {
+    const handler = (_: unknown, event: SessionLifecycleEvent) => callback(event)
+    ipcRenderer.on(IPC.SESSION_LIFECYCLE, handler)
+    return () => ipcRenderer.removeListener(IPC.SESSION_LIFECYCLE, handler)
+  },
+
+  onProjectState(callback: (state: ProjectState) => void) {
+    const handler = (_: unknown, state: ProjectState) => callback(state)
+    ipcRenderer.on(IPC.PROJECT_STATE, handler)
+    return () => ipcRenderer.removeListener(IPC.PROJECT_STATE, handler)
+  }
+}
+
+contextBridge.exposeInMainWorld('claide', api)
