@@ -24,14 +24,14 @@ Claide is not a full IDE, not a cloud orchestrator, and not a voice-first assist
 - Provide one separate shell terminal for user-driven commands.
 - Stay local-only and fast enough to manage 5-8 sessions comfortably.
 
-## Non-Goals
+## Non-Goals (MVP)
 
 - Voice transcription or local ASR.
 - File editing or Monaco-style editor surfaces.
-- Embedded browser, PR viewer, watchdogs, or toolkit automation.
-- Multi-project workspaces.
-- Cross-platform parity before Windows PTY and path behavior are solid.
 - Deep Claude orchestration features beyond session lifecycle.
+- Cross-platform parity before Windows PTY and path behavior are solid.
+
+Note: Multi-project workspaces, worktree creation, toolkit, and embedded browser are planned for post-MVP milestones (5-7+) based on Scape feature analysis.
 
 ## MVP Definition
 
@@ -183,17 +183,52 @@ Deliverables:
 - Minimal header and status bar.
 - Optional CLI path override for Claude and shell executables.
 
-### Milestone 4: Nice-to-have read-only context
+### Milestone 4: Read-only file context
 
-Goal: add convenience without changing the app's role.
+Goal: add project browsing without changing the app's role.
 
 Deliverables:
 
-- Read-only file tree.
-- Basic file preview.
+- Read-only file tree with file type icons and directory collapse.
+- File filter/search input (Ctrl+P or filter box).
+- Basic file preview (syntax-highlighted for code, rendered for markdown).
 - Gitignore-aware filtering.
+- "Show changes" toggle to filter tree to git-modified files with +/- counts.
 
 This milestone should only start if Milestones 0-3 are stable.
+
+### Milestone 5: Worktree creation and management
+
+Goal: bring worktree lifecycle into Claide for faster parallel workflows.
+
+Deliverables:
+
+- Quick-create popover: text input for worktree name → runs `git worktree add`.
+- Show existing worktrees in the creation dialog for reference.
+- Worktree cleanup: detect merged/prunable worktrees, offer removal (with NTFS junction safety).
+- Integration with Claude Code's `.worktreeinclude` for copying gitignored files.
+
+### Milestone 6: Multi-project workspace
+
+Goal: manage multiple repos from a single Claide window.
+
+Deliverables:
+
+- Projects sidebar: list all opened/recent repos with worktrees nested as children.
+- Switch between projects without closing sessions (background projects stay alive).
+- Project-level status indicators (active sessions count, worktree status dots).
+- "Add Project" button and drag-drop folder support.
+
+### Milestone 7: Enhanced session intelligence
+
+Goal: surface richer Claude session metadata and navigation.
+
+Deliverables:
+
+- Granular Claude state badges: Idle (green), Thinking (blue), Generating (orange), Starting (yellow).
+- Session avatars: auto-generated unique icons per session for visual identification.
+- Activity feed tab alongside Sessions showing recent actions across all sessions.
+- Session navigation hints on cards ("0-9 Jump | Prev | Next").
 
 ## Assumptions And Validation Spikes
 
@@ -525,16 +560,15 @@ If best-effort fields are missing, the card must remain usable.
 | Worktree directory missing | Mark worktree as prunable in the group header. Sessions still shown as saved. |
 | Worktree list fails | Fall back to single-root mode for the opened directory only. |
 
-## Future Enhancements
+## Future Enhancements (Post-Milestone 7)
 
-- Worktree creation and cleanup UI
-- Read-only file tree and preview
-- Rich telemetry once parser stability is proven
-- Session reorder and layout persistence
-- Toolkit actions
-- Watchdogs or orchestrators
-- Embedded browser or PR inspector
-- Voice transcription
+- Toolkit panel: configurable one-click project actions (commit, push, run tests, deploy)
+- Embedded browser with network inspector for web app debugging
+- Document/notes panel: render markdown files inline, project-level notes
+- Watchdogs or orchestrators (Scape-style autonomous session monitoring)
+- Session drag reordering and layout persistence
+- Voice transcription (local ASR model — large binary, late-stage scope)
+- PR viewer / GitHub integration
 
 ## Appendix A: Visual Direction
 
