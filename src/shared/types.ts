@@ -10,13 +10,29 @@ export interface SessionInfo {
   error?: string
 }
 
+// Worktree with its grouped sessions
+export interface WorktreeInfo {
+  path: string           // absolute path, backslash-normalized on Windows
+  branch: string | null
+  isMainCheckout: boolean
+  isPrunable: boolean
+  isLocked: boolean
+  sessions: SessionInfo[]
+}
+
 // Full project state sent from main → renderer
 export interface ProjectState {
   rootPath: string
   claudeAvailable: boolean
   claudeVersion?: string
-  sessions: SessionInfo[]
+  isGitRepo: boolean
+  worktrees: WorktreeInfo[]
   error?: string
+}
+
+// Helper: flatten all sessions from worktrees
+export function flatSessions(state: ProjectState): SessionInfo[] {
+  return state.worktrees.flatMap(wt => wt.sessions)
 }
 
 // IPC channel names — single source of truth
@@ -29,6 +45,12 @@ export const IPC = {
   SESSION_RESUME: 'session:resume',
   SESSION_STOP: 'session:stop',
   SESSION_RENAME: 'session:rename',
+
+  // Shell
+  SHELL_CREATE: 'shell:create',
+  SHELL_INPUT: 'shell:input',
+  SHELL_RESIZE: 'shell:resize',
+  SHELL_DATA: 'shell:data',
 
   // Main → Renderer (send)
   PROJECT_STATE: 'project:state',
@@ -65,6 +87,11 @@ export interface SessionStopPayload {
 export interface SessionRenamePayload {
   uuid: string
   displayName: string
+}
+
+export interface ShellResizePayload {
+  cols: number
+  rows: number
 }
 
 export interface SessionDataEvent {
