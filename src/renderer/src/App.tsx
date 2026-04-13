@@ -186,7 +186,12 @@ export default function App() {
   // --- Welcome screen (no project open) ---
 
   if (!state) {
-    return <WelcomeScreen onOpenProject={openProject} onPickProject={pickAndOpenProject} />
+    return (
+      <>
+        <WelcomeScreen onOpenProject={openProject} onPickProject={pickAndOpenProject} />
+        {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
+      </>
+    )
   }
 
   // --- Main app layout ---
