@@ -12,9 +12,11 @@ export interface ClaideAPI {
   cwd: string
   openProject(rootPath: string): Promise<ProjectState>
   createSession(cwd: string, name?: string): Promise<ProjectState>
+  resumeSession(uuid: string, cwd: string): Promise<ProjectState>
   sendInput(uuid: string, data: string): void
   resizeSession(uuid: string, cols: number, rows: number): void
   stopSession(uuid: string): Promise<ProjectState>
+  renameSession(uuid: string, displayName: string): Promise<ProjectState>
   onSessionData(callback: (event: SessionDataEvent) => void): () => void
   onSessionLifecycle(callback: (event: SessionLifecycleEvent) => void): () => void
   onProjectState(callback: (state: ProjectState) => void): () => void
@@ -33,6 +35,10 @@ const api: ClaideAPI = {
     return ipcRenderer.invoke(IPC.SESSION_CREATE, payload)
   },
 
+  resumeSession(uuid: string, cwd: string) {
+    return ipcRenderer.invoke(IPC.SESSION_RESUME, { uuid, cwd })
+  },
+
   sendInput(uuid: string, data: string) {
     ipcRenderer.send(IPC.SESSION_INPUT, { uuid, data })
   },
@@ -43,6 +49,10 @@ const api: ClaideAPI = {
 
   stopSession(uuid: string) {
     return ipcRenderer.invoke(IPC.SESSION_STOP, { uuid })
+  },
+
+  renameSession(uuid: string, displayName: string) {
+    return ipcRenderer.invoke(IPC.SESSION_RENAME, { uuid, displayName })
   },
 
   onSessionData(callback: (event: SessionDataEvent) => void) {

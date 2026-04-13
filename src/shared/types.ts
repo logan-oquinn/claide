@@ -26,7 +26,9 @@ export const IPC = {
   SESSION_CREATE: 'session:create',
   SESSION_INPUT: 'session:input',
   SESSION_RESIZE: 'session:resize',
+  SESSION_RESUME: 'session:resume',
   SESSION_STOP: 'session:stop',
+  SESSION_RENAME: 'session:rename',
 
   // Main → Renderer (send)
   PROJECT_STATE: 'project:state',
@@ -51,8 +53,18 @@ export interface SessionResizePayload {
   rows: number
 }
 
+export interface SessionResumePayload {
+  uuid: string
+  cwd: string
+}
+
 export interface SessionStopPayload {
   uuid: string
+}
+
+export interface SessionRenamePayload {
+  uuid: string
+  displayName: string
 }
 
 export interface SessionDataEvent {

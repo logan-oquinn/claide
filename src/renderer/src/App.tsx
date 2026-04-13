@@ -53,9 +53,17 @@ export default function App() {
     }
   }, [state?.rootPath])
 
-  const handleSelectSession = useCallback((uuid: string) => {
+  const handleSelectSession = useCallback(async (uuid: string) => {
+    const session = state?.sessions.find(s => s.uuid === uuid)
+
+    // If stopped/saved, resume it
+    if (session && session.lifecycle === 'stopped' && state?.rootPath) {
+      const newState = await window.claide.resumeSession(uuid, state.rootPath)
+      setState(newState)
+    }
+
     setActiveSessionUuid(uuid)
-  }, [])
+  }, [state?.sessions, state?.rootPath])
 
   const handleStopSession = useCallback(async (uuid: string) => {
     const newState = await window.claide.stopSession(uuid)

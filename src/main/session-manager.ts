@@ -77,6 +77,60 @@ export class SessionManager extends EventEmitter {
   }
 
   /**
+   * Resume an existing Claude session by UUID.
+   * Spawns `claude --resume <uuid>` with the original cwd.
+   */
+  resume(uuid: string, cwd: string, displayName?: string): SessionInfo {
+    const claudePath = findClaudePath()
+    if (!claudePath) {
+      throw new Error('Claude CLI not found. Install Claude Code and ensure it is in your PATH.')
+    }
+
+    // If already running, just return its info
+    const existing = this.sessions.get(uuid)
+    if (existing?.lifecycle === 'running') {
+      return this.toSessionInfo(existing)
+    }
+
+    const args: string[] = ['--resume', uuid]
+
+    const ptyProcess = pty.spawn(claudePath, args, {
+      name: 'xterm-256color',
+      cols: 120,
+      rows: 30,
+      cwd,
+      env: process.env as Record<string, string>
+    })
+
+    const session: ManagedSession = {
+      uuid,
+      displayName: displayName || existing?.displayName || uuid.substring(0, 8),
+      lifecycle: 'running',
+      pty: ptyProcess,
+      cwd
+    }
+
+    ptyProcess.onData((data: string) => {
+      this.emit('data', uuid, data)
+    })
+
+    ptyProcess.onExit(({ exitCode }) => {
+      const isNormalExit = exitCode === 0 || exitCode === -1073741510
+      session.lifecycle = isNormalExit ? 'stopped' : 'error'
+      session.pty = null
+      if (!isNormalExit) {
+        session.error = `Process exited with code ${exitCode}`
+      }
+      this.emit('lifecycle', uuid, session.lifecycle, session.error)
+    })
+
+    this.sessions.set(uuid, session)
+    this.emit('lifecycle', uuid, 'running')
+
+    return this.toSessionInfo(session)
+  }
+
+  /**
    * Write keyboard input to a session's PTY.
    */
   write(uuid: string, data: string): void {

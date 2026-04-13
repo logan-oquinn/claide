@@ -7,9 +7,11 @@ import { IPC } from '../shared/types'
 import type {
   ProjectState,
   SessionCreatePayload,
+  SessionResumePayload,
   SessionInputPayload,
   SessionResizePayload,
-  SessionStopPayload
+  SessionStopPayload,
+  SessionRenamePayload
 } from '../shared/types'
 
 /**
@@ -69,6 +71,21 @@ export function registerIpcHandlers(
     return buildProjectState(sessionManager, currentRootPath)
   })
 
+  // session:resume — resume a saved Claude session by UUID
+  ipcMain.handle(IPC.SESSION_RESUME, (_event, payload: SessionResumePayload): ProjectState => {
+    try {
+      sessionManager.resume(payload.uuid, payload.cwd)
+    } catch (err) {
+      return {
+        rootPath: currentRootPath,
+        claudeAvailable: false,
+        sessions: sessionManager.listSessions(),
+        error: err instanceof Error ? err.message : String(err)
+      }
+    }
+    return buildProjectState(sessionManager, currentRootPath)
+  })
+
   // session:input — forward keyboard data to PTY
   ipcMain.on(IPC.SESSION_INPUT, (_event, payload: SessionInputPayload) => {
     sessionManager.write(payload.uuid, payload.data)
@@ -82,6 +99,18 @@ export function registerIpcHandlers(
   // session:stop — staged shutdown
   ipcMain.handle(IPC.SESSION_STOP, async (_event, payload: SessionStopPayload): Promise<ProjectState> => {
     await sessionManager.stop(payload.uuid)
+    return buildProjectState(sessionManager, currentRootPath)
+  })
+
+  // session:rename — update display name
+  ipcMain.handle(IPC.SESSION_RENAME, (_event, payload: SessionRenamePayload): ProjectState => {
+    // For now, just update the in-memory session name
+    // Task 3 will persist this to .claide/sessions.json
+    const sessions = sessionManager.listSessions()
+    const session = sessions.find(s => s.uuid === payload.uuid)
+    if (session) {
+      session.displayName = payload.displayName
+    }
     return buildProjectState(sessionManager, currentRootPath)
   })
 }
