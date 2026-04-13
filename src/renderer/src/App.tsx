@@ -161,22 +161,30 @@ export default function App() {
           {!hasActiveTerminal && (
             <div className="empty-state">
               {!state ? (
-                <span>Loading...</span>
+                <span className="empty-state-title">Loading...</span>
               ) : !state.claudeAvailable ? (
                 <>
-                  <span>Claude CLI not found</span>
-                  <span style={{ fontSize: 12 }}>
+                  <span className="empty-state-title">Claude CLI not found</span>
+                  <span className="empty-state-hint">
                     Install Claude Code and ensure &apos;claude&apos; is in your PATH
                   </span>
                 </>
               ) : activeSession && activeSession.lifecycle === 'stopped' ? (
-                <span>Session stopped. Click to resume or start a new session.</span>
+                <>
+                  <span className="empty-state-title">Session stopped</span>
+                  <span className="empty-state-hint">Click to resume or start a new session</span>
+                </>
               ) : activeSession && activeSession.lifecycle === 'error' ? (
-                <span style={{ color: '#f87171' }}>
-                  Session error: {activeSession.error || 'Unknown error'}
-                </span>
+                <>
+                  <span className="empty-state-title" style={{ color: 'var(--red)' }}>Session error</span>
+                  <span className="empty-state-hint">{activeSession.error || 'Unknown error'}</span>
+                </>
               ) : (
-                <span>Click &quot;+ New Session&quot; to start</span>
+                <>
+                  <span className="empty-state-title">No active session</span>
+                  <span className="empty-state-hint">Create a new Claude Code session to get started</span>
+                  <span className="empty-state-shortcut">Ctrl+N</span>
+                </>
               )}
             </div>
           )}
@@ -186,7 +194,10 @@ export default function App() {
         {shellOpen && state?.rootPath && (
           <div className="shell-area">
             <div className="shell-header">
-              <span>Shell</span>
+              <div className="shell-header-left">
+                <span>Shell</span>
+                <span className="shell-type-label">pwsh</span>
+              </div>
               <button className="shell-close-btn" onClick={() => setShellOpen(false)}>x</button>
             </div>
             <ShellPanel cwd={state.rootPath} />
@@ -200,7 +211,8 @@ export default function App() {
             onClick={() => setShellOpen(true)}
             title="Toggle shell (Ctrl+`)"
           >
-            Shell
+            <span>Shell</span>
+            <span className="shell-toggle-hint">Ctrl+`</span>
           </button>
         )}
       </div>

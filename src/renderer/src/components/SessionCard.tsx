@@ -3,13 +3,14 @@ import type { SessionInfo } from '../../../shared/types'
 
 interface Props {
   session: SessionInfo
+  index: number
   isActive: boolean
   onClick: () => void
   onStop?: () => void
   onRename?: (newName: string) => void
 }
 
-export default function SessionCard({ session, isActive, onClick, onStop, onRename }: Props) {
+export default function SessionCard({ session, index, isActive, onClick, onStop, onRename }: Props) {
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState(session.displayName)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -29,12 +30,17 @@ export default function SessionCard({ session, isActive, onClick, onStop, onRena
     setEditing(false)
   }
 
+  const lifecycleClass = session.lifecycle
+
   return (
     <div
-      className={`session-card ${isActive ? 'active' : ''}`}
+      className={`session-card ${isActive ? 'active' : ''} ${lifecycleClass}`}
       onClick={onClick}
     >
       <div className="session-card-header">
+        {index <= 8 && (
+          <span className="session-index">{index}</span>
+        )}
         {editing ? (
           <input
             ref={inputRef}
@@ -56,7 +62,7 @@ export default function SessionCard({ session, isActive, onClick, onStop, onRena
               setEditValue(session.displayName)
               setEditing(true)
             }}
-            title="Double-click to rename"
+            title={`${session.displayName} (double-click to rename)`}
           >
             {session.displayName}
           </div>
@@ -72,18 +78,15 @@ export default function SessionCard({ session, isActive, onClick, onStop, onRena
         )}
       </div>
       <div className="session-meta">
-        <span className={`session-badge ${session.lifecycle}`}>
-          {session.lifecycle}
-        </span>
+        <span className={`session-status-dot ${session.lifecycle}`} />
+        {session.lifecycle === 'running' && (
+          <span className="session-status-label">running</span>
+        )}
         {session.lastActiveAt && session.lifecycle === 'stopped' && (
-          <span className="session-time">
-            {formatRelativeTime(session.lastActiveAt)}
-          </span>
+          <span className="session-time">{formatRelativeTime(session.lastActiveAt)}</span>
         )}
         {session.error && (
-          <span className="session-error-hint" title={session.error}>
-            !
-          </span>
+          <span className="session-error-hint" title={session.error}>error</span>
         )}
       </div>
     </div>
