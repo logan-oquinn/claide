@@ -3,6 +3,7 @@ import { IPC } from '../shared/types'
 import type {
   ProjectState,
   RecentProject,
+  FileTreeEntry,
   SessionCreatePayload,
   SessionDataEvent,
   SessionLifecycleEvent
@@ -24,6 +25,10 @@ export interface ClaideAPI {
   onSessionData(callback: (event: SessionDataEvent) => void): () => void
   onSessionLifecycle(callback: (event: SessionLifecycleEvent) => void): () => void
   onProjectState(callback: (state: ProjectState) => void): () => void
+  // File tree
+  listDirectory(dirPath: string, rootPath: string): Promise<FileTreeEntry[]>
+  readFile(filePath: string): Promise<string | null>
+
   // Settings
   getSettings(): Promise<ClaideSettings>
   saveSettings(settings: ClaideSettings): Promise<void>
@@ -94,6 +99,15 @@ const api: ClaideAPI = {
     const handler = (_: unknown, state: ProjectState) => callback(state)
     ipcRenderer.on(IPC.PROJECT_STATE, handler)
     return () => ipcRenderer.removeListener(IPC.PROJECT_STATE, handler)
+  },
+
+  // File tree
+  listDirectory(dirPath: string, rootPath: string) {
+    return ipcRenderer.invoke(IPC.FILETREE_LIST, dirPath, rootPath)
+  },
+
+  readFile(filePath: string) {
+    return ipcRenderer.invoke(IPC.FILETREE_READ, filePath)
   },
 
   // Settings

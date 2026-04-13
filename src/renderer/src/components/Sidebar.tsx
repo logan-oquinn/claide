@@ -42,9 +42,9 @@ export default function Sidebar({
   let indexOffset = 0
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <div className="sidebar-title-row">
+    <div className="session-panel">
+      <div className="session-panel-header">
+        <div className="session-panel-title-row">
           <h1>Claide</h1>
           <span
             className={`claude-status-dot ${state?.claudeAvailable ? 'available' : 'unavailable'}`}
@@ -63,7 +63,7 @@ export default function Sidebar({
         </button>
       </div>
 
-      <div className="sidebar-sessions">
+      <div className="session-panel-sessions">
         {filteredWorktrees.map((wt) => {
           const offset = indexOffset
           indexOffset += wt.sessions.length
@@ -83,19 +83,19 @@ export default function Sidebar({
         })}
 
         {filteredWorktrees.length === 0 && !showHistory && (
-          <div className="sidebar-empty">
+          <div className="session-panel-empty">
             No active sessions
           </div>
         )}
 
         {filteredWorktrees.length === 0 && showHistory && (
-          <div className="sidebar-empty">
+          <div className="session-panel-empty">
             No sessions yet
           </div>
         )}
       </div>
 
-      <div className="sidebar-footer">
+      <div className="session-panel-footer">
         {stoppedCount > 0 && (
           <button
             className="btn-history-toggle"

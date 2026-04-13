@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Sidebar from './components/Sidebar'
+import FileTree from './components/FileTree'
+import FilePreview from './components/FilePreview'
 import TerminalPanel from './components/TerminalPanel'
 import ShellPanel from './components/ShellPanel'
 import WelcomeScreen from './components/WelcomeScreen'
@@ -13,6 +15,7 @@ export default function App() {
   const [activeSessionUuid, setActiveSessionUuid] = useState<string | null>(null)
   const [shellOpen, setShellOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [previewFilePath, setPreviewFilePath] = useState<string | null>(null)
 
   // On mount: check for default project path, auto-open if set
   useEffect(() => {
@@ -194,23 +197,28 @@ export default function App() {
     )
   }
 
-  // --- Main app layout ---
+  // --- Main app layout: [FileTree] [Terminal] [Sessions] ---
 
   return (
     <div className="app-layout">
-      <Sidebar
-        state={state}
-        activeSessionUuid={activeSessionUuid}
-        onSelectSession={handleSelectSession}
-        onNewSession={handleNewSession}
-        onStopSession={handleStopSession}
-        onRenameSession={handleRenameSession}
-        onSwitchProject={pickAndOpenProject}
+      {/* Left: File Tree */}
+      <FileTree
+        rootPath={state.rootPath}
+        selectedPath={previewFilePath}
+        onSelectFile={setPreviewFilePath}
       />
 
+      {/* Center: Terminal + Shell + File Preview */}
       <div className="main-content">
         {state.error && (
           <div className="error-banner">{state.error}</div>
+        )}
+
+        {previewFilePath && (
+          <FilePreview
+            filePath={previewFilePath}
+            onClose={() => setPreviewFilePath(null)}
+          />
         )}
 
         <div className="terminal-area">
@@ -276,6 +284,17 @@ export default function App() {
           </button>
         )}
       </div>
+
+      {/* Right: Session Panel */}
+      <Sidebar
+        state={state}
+        activeSessionUuid={activeSessionUuid}
+        onSelectSession={handleSelectSession}
+        onNewSession={handleNewSession}
+        onStopSession={handleStopSession}
+        onRenameSession={handleRenameSession}
+        onSwitchProject={pickAndOpenProject}
+      />
 
       {settingsOpen && (
         <SettingsPanel onClose={() => setSettingsOpen(false)} />

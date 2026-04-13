@@ -6,6 +6,7 @@ import { registerIpcHandlers } from './ipc-handlers'
 import { readRecentProjects, addRecentProject } from './lib/recent-projects'
 import { readSettings, writeSettings, type ClaideSettings } from './lib/settings-store'
 import { setClaudePathOverride } from './lib/claude-cli'
+import { listDirectory, readFileContents } from './lib/file-tree'
 import { IPC } from '../shared/types'
 import type { ShellResizePayload, RecentProject } from '../shared/types'
 
@@ -95,6 +96,16 @@ function createWindow(): void {
   })
 }
 
+function registerFileTreeIpc(): void {
+  ipcMain.handle(IPC.FILETREE_LIST, (_event, dirPath: string, rootPath: string) => {
+    return listDirectory(dirPath, rootPath)
+  })
+
+  ipcMain.handle(IPC.FILETREE_READ, (_event, filePath: string) => {
+    return readFileContents(filePath)
+  })
+}
+
 function registerProjectIpc(): void {
   // Pick a folder via native dialog
   ipcMain.handle(IPC.PROJECT_PICK, async (): Promise<string | null> => {
@@ -167,6 +178,7 @@ app.whenReady().then(() => {
 
   createMenu()
   registerProjectIpc()
+  registerFileTreeIpc()
   registerSettingsIpc()
   registerIpcHandlers(sessionManager, () => mainWindow)
   registerShellIpc()

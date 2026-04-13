@@ -61,6 +61,10 @@ export const IPC = {
   SESSION_STOP: 'session:stop',
   SESSION_RENAME: 'session:rename',
 
+  // File tree
+  FILETREE_LIST: 'filetree:list',
+  FILETREE_READ: 'filetree:read',
+
   // Settings
   SETTINGS_GET: 'settings:get',
   SETTINGS_SAVE: 'settings:save',
@@ -113,6 +117,14 @@ export interface RecentProject {
   path: string
   name: string
   lastOpenedAt: string
+}
+
+export interface FileTreeEntry {
+  name: string
+  path: string
+  isDirectory: boolean
+  children?: FileTreeEntry[]
+  gitStatus?: 'modified' | 'added' | 'deleted' | 'untracked'
 }
 
 export interface ShellResizePayload {
