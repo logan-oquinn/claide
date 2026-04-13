@@ -380,6 +380,42 @@ body {
   color: var(--text-dim);
 }
 
+.session-model {
+  font-size: 9px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.session-cost {
+  font-size: 9px;
+  color: var(--yellow);
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+}
+
+.session-context-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  padding-left: 18px;
+}
+
+.session-context-bar {
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  transition: width 300ms ease;
+  min-width: 1px;
+  max-width: 100px;
+  flex-shrink: 0;
+}
+
+.session-context-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+}
+
 .session-error-hint {
   color: var(--red);
   font-size: 10px;

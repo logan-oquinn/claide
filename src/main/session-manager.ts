@@ -2,9 +2,11 @@ import * as pty from 'node-pty'
 import { randomUUID } from 'crypto'
 import { EventEmitter } from 'events'
 import { findClaudePath } from './lib/claude-cli'
-import type { SessionInfo, SessionLifecycle } from '../shared/types'
+import { parseStatusBar } from './lib/status-adapter'
+import type { SessionInfo, SessionLifecycle, ParsedStatus } from '../shared/types'
 
 const STOP_TIMEOUT_MS = 5000
+const OUTPUT_BUFFER_SIZE = 3000
 
 interface ManagedSession {
   uuid: string
@@ -13,6 +15,8 @@ interface ManagedSession {
   pty: pty.IPty | null
   cwd: string
   error?: string
+  outputBuffer: string
+  parsedStatus: ParsedStatus | null
 }
 
 /**
@@ -52,11 +56,14 @@ export class SessionManager extends EventEmitter {
       displayName,
       lifecycle: 'running',
       pty: ptyProcess,
-      cwd
+      cwd,
+      outputBuffer: '',
+      parsedStatus: null
     }
 
     ptyProcess.onData((data: string) => {
       this.emit('data', uuid, data)
+      this.updateStatusBuffer(session, data)
     })
 
     ptyProcess.onExit(({ exitCode }) => {
@@ -107,11 +114,14 @@ export class SessionManager extends EventEmitter {
       displayName: displayName || existing?.displayName || uuid.substring(0, 8),
       lifecycle: 'running',
       pty: ptyProcess,
-      cwd
+      cwd,
+      outputBuffer: '',
+      parsedStatus: null
     }
 
     ptyProcess.onData((data: string) => {
       this.emit('data', uuid, data)
+      this.updateStatusBuffer(session, data)
     })
 
     ptyProcess.onExit(({ exitCode }) => {
@@ -205,13 +215,30 @@ export class SessionManager extends EventEmitter {
     }
   }
 
+  /**
+   * Accumulate terminal output and parse status bar.
+   * Keeps a rolling buffer of the last N bytes per session.
+   */
+  private updateStatusBuffer(session: ManagedSession, data: string): void {
+    session.outputBuffer += data
+    if (session.outputBuffer.length > OUTPUT_BUFFER_SIZE) {
+      session.outputBuffer = session.outputBuffer.slice(-OUTPUT_BUFFER_SIZE)
+    }
+
+    const parsed = parseStatusBar(session.outputBuffer)
+    if (parsed) {
+      session.parsedStatus = parsed
+    }
+  }
+
   private toSessionInfo(session: ManagedSession): SessionInfo {
     return {
       uuid: session.uuid,
       displayName: session.displayName,
       lifecycle: session.lifecycle,
       lastActiveAt: new Date().toISOString(),
-      error: session.error
+      error: session.error,
+      status: session.parsedStatus ?? undefined
     }
   }
 }

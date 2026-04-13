@@ -79,16 +79,33 @@ export default function SessionCard({ session, index, isActive, onClick, onStop,
       </div>
       <div className="session-meta">
         <span className={`session-status-dot ${session.lifecycle}`} />
-        {session.lifecycle === 'running' && (
+        {session.status?.model && (
+          <span className="session-model">{session.status.model}</span>
+        )}
+        {session.lifecycle === 'running' && !session.status?.model && (
           <span className="session-status-label">running</span>
         )}
         {session.lastActiveAt && session.lifecycle === 'stopped' && (
           <span className="session-time">{formatRelativeTime(session.lastActiveAt)}</span>
         )}
+        {session.status?.cost && (
+          <span className="session-cost">{session.status.cost}</span>
+        )}
         {session.error && (
           <span className="session-error-hint" title={session.error}>error</span>
         )}
       </div>
+      {session.status?.contextPercent != null && session.lifecycle === 'running' && (
+        <div className="session-context-bar-wrapper">
+          <div
+            className="session-context-bar"
+            style={{ width: `${Math.max(1, session.status.contextPercent)}%` }}
+          />
+          <span className="session-context-label">
+            {session.status.contextPercent}%
+          </span>
+        </div>
+      )}
     </div>
   )
 }

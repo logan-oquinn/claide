@@ -1,6 +1,18 @@
 // Session lifecycle states
 export type SessionLifecycle = 'running' | 'stopped' | 'error'
 
+// Parsed status from Claude's terminal status bar (best-effort)
+export interface ParsedStatus {
+  model?: string
+  contextUsed?: number
+  contextTotal?: number
+  contextPercent?: number
+  effort?: string
+  cost?: string
+  rateLimit5h?: number
+  rateLimit7d?: number
+}
+
 // Session info as seen by the renderer
 export interface SessionInfo {
   uuid: string
@@ -8,6 +20,7 @@ export interface SessionInfo {
   lifecycle: SessionLifecycle
   lastActiveAt?: string
   error?: string
+  status?: ParsedStatus
 }
 
 // Worktree with its grouped sessions
