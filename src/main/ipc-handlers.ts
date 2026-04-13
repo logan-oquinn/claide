@@ -174,30 +174,16 @@ function buildProjectState(
     })
 
     // Saved sessions not currently running
-    // Assign stable default names and persist them so they don't change on rebuild
-    let needsMetadataSave = false
+    // Default name is the shortened UUID — stable, unique, never changes.
+    // Custom names are only set when the user explicitly renames.
     const savedSessions = discovered
       .filter(d => !runningUuids.has(d.uuid))
-      .map(d => {
-        let displayName = metadata.sessions[d.uuid]?.displayName
-        if (!displayName) {
-          // Generate a stable name and persist it immediately
-          const existingCount = Object.keys(metadata.sessions).length
-          displayName = `Session ${existingCount + 1}`
-          metadata = touchSession(metadata, d.uuid, displayName)
-          needsMetadataSave = true
-        }
-        return {
-          uuid: d.uuid,
-          displayName,
-          lifecycle: 'stopped' as const,
-          lastActiveAt: metadata.sessions[d.uuid]?.lastActiveAt,
-        }
-      })
-
-    if (needsMetadataSave && rootPath) {
-      writeMetadata(rootPath, metadata)
-    }
+      .map(d => ({
+        uuid: d.uuid,
+        displayName: metadata.sessions[d.uuid]?.displayName || d.uuid.substring(0, 8),
+        lifecycle: 'stopped' as const,
+        lastActiveAt: metadata.sessions[d.uuid]?.lastActiveAt,
+      }))
 
     // Enriched running sessions
     const enrichedRunning = runningForWorktree.map(s => ({
