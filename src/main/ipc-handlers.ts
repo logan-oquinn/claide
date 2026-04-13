@@ -174,15 +174,30 @@ function buildProjectState(
     })
 
     // Saved sessions not currently running
-    let sessionCounter = 0
+    // Assign stable default names and persist them so they don't change on rebuild
+    let needsMetadataSave = false
     const savedSessions = discovered
       .filter(d => !runningUuids.has(d.uuid))
-      .map(d => ({
-        uuid: d.uuid,
-        displayName: metadata.sessions[d.uuid]?.displayName || `Session ${++sessionCounter}`,
-        lifecycle: 'stopped' as const,
-        lastActiveAt: metadata.sessions[d.uuid]?.lastActiveAt,
-      }))
+      .map(d => {
+        let displayName = metadata.sessions[d.uuid]?.displayName
+        if (!displayName) {
+          // Generate a stable name and persist it immediately
+          const existingCount = Object.keys(metadata.sessions).length
+          displayName = `Session ${existingCount + 1}`
+          metadata = touchSession(metadata, d.uuid, displayName)
+          needsMetadataSave = true
+        }
+        return {
+          uuid: d.uuid,
+          displayName,
+          lifecycle: 'stopped' as const,
+          lastActiveAt: metadata.sessions[d.uuid]?.lastActiveAt,
+        }
+      })
+
+    if (needsMetadataSave && rootPath) {
+      writeMetadata(rootPath, metadata)
+    }
 
     // Enriched running sessions
     const enrichedRunning = runningForWorktree.map(s => ({
