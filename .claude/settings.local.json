@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(claude --version)",
+      "Read(//tmp/**)",
+      "Bash(claude -p \"say hello\")",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(rm -rf \"C:/Users/Logan.OQuinn/.claude/projects/C--Users-Logan-OQuinn-AppData-Local-Temp-claide-wt-test\" \"C:/Users/Logan.OQuinn/.claude/projects/C--Users-Logan-OQuinn-source-repos-reinstatements-rework--claude-worktrees-test-spike\")",
+      "Bash(echo \"Cleanup: $?\")",
+      "Bash(python3 -c \"import sys,json; line=sys.stdin.readline\\(\\); d=json.loads\\(line\\); print\\(json.dumps\\({k:d[k] for k in ['sessionId','type','cwd','parentSessionId'] if k in d}, indent=2\\)\\)\")",
+      "Bash(python -c \"import sys,json; line=sys.stdin.readline\\(\\); d=json.loads\\(line\\); print\\(json.dumps\\({k:d[k] for k in ['sessionId','type','cwd','parentSessionId','uuid','id'] if k in d}, indent=2\\)\\)\")",
+      "Bash(python -c \"import sys,json; line=sys.stdin.readline\\(\\); d=json.loads\\(line\\); print\\(json.dumps\\({k:d[k] for k in ['sessionId','type'] if k in d}, indent=2\\)\\)\")",
+      "Bash(claude --resume --print-session-id)"
+    ]
+  }
+}
