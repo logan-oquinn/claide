@@ -61,6 +61,11 @@ export const IPC = {
   SESSION_STOP: 'session:stop',
   SESSION_RENAME: 'session:rename',
 
+  // Settings
+  SETTINGS_GET: 'settings:get',
+  SETTINGS_SAVE: 'settings:save',
+  SETTINGS_BROWSE: 'settings:browse',
+
   // Shell
   SHELL_CREATE: 'shell:create',
   SHELL_INPUT: 'shell:input',

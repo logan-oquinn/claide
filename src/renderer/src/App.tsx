@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar'
 import TerminalPanel from './components/TerminalPanel'
 import ShellPanel from './components/ShellPanel'
 import WelcomeScreen from './components/WelcomeScreen'
+import SettingsPanel from './components/SettingsPanel'
 import { flatSessions } from '../../shared/types'
 import type { ProjectState } from '../../shared/types'
 import './styles/global.css'
@@ -11,6 +12,16 @@ export default function App() {
   const [state, setState] = useState<ProjectState | null>(null)
   const [activeSessionUuid, setActiveSessionUuid] = useState<string | null>(null)
   const [shellOpen, setShellOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+
+  // On mount: check for default project path, auto-open if set
+  useEffect(() => {
+    window.claide.getSettings().then(settings => {
+      if (settings.defaultProjectPath) {
+        window.claide.openProject(settings.defaultProjectPath).then(setState)
+      }
+    })
+  }, [])
 
   // Listen for project state updates
   useEffect(() => {
@@ -106,6 +117,13 @@ export default function App() {
       if (e.ctrlKey && e.key === 'o') {
         e.preventDefault()
         pickAndOpenProject()
+        return
+      }
+
+      // Ctrl+, — toggle settings
+      if (e.ctrlKey && e.key === ',') {
+        e.preventDefault()
+        setSettingsOpen(prev => !prev)
         return
       }
 
@@ -242,6 +260,10 @@ export default function App() {
           </button>
         )}
       </div>
+
+      {settingsOpen && (
+        <SettingsPanel onClose={() => setSettingsOpen(false)} />
+      )}
     </div>
   )
 }

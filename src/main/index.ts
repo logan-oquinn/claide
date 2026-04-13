@@ -4,12 +4,19 @@ import { SessionManager } from './session-manager'
 import { ShellManager } from './shell-manager'
 import { registerIpcHandlers } from './ipc-handlers'
 import { readRecentProjects, addRecentProject } from './lib/recent-projects'
+import { readSettings, writeSettings, type ClaideSettings } from './lib/settings-store'
+import { setClaudePathOverride } from './lib/claude-cli'
 import { IPC } from '../shared/types'
 import type { ShellResizePayload, RecentProject } from '../shared/types'
 
 let mainWindow: BrowserWindow | null = null
 const sessionManager = new SessionManager()
 const shellManager = new ShellManager()
+
+function applySettings(settings: ClaideSettings): void {
+  setClaudePathOverride(settings.claudePath)
+  shellManager.setShellPathOverride(settings.shellPath)
+}
 
 function createMenu(): void {
   const template: Electron.MenuItemConstructorOptions[] = [
@@ -25,6 +32,8 @@ function createMenu(): void {
         { label: 'New Session', accelerator: 'CmdOrCtrl+N', click: () => mainWindow?.webContents.send('menu:new-session') },
         { type: 'separator' },
         { label: 'Toggle Shell', accelerator: 'CmdOrCtrl+`', click: () => mainWindow?.webContents.send('menu:toggle-shell') },
+        { type: 'separator' },
+        { label: 'Settings...', accelerator: 'CmdOrCtrl+,', click: () => mainWindow?.webContents.send('menu:settings') },
         { type: 'separator' },
         { role: 'quit' }
       ]
@@ -105,6 +114,28 @@ function registerProjectIpc(): void {
   })
 }
 
+function registerSettingsIpc(): void {
+  ipcMain.handle(IPC.SETTINGS_GET, (): ClaideSettings => {
+    return readSettings()
+  })
+
+  ipcMain.handle(IPC.SETTINGS_SAVE, (_event, settings: ClaideSettings): void => {
+    writeSettings(settings)
+    applySettings(settings)
+  })
+
+  // Browse for a file (used by settings panel for CLI path selection)
+  ipcMain.handle(IPC.SETTINGS_BROWSE, async (_event, type: 'file' | 'directory'): Promise<string | null> => {
+    if (!mainWindow) return null
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: [type === 'file' ? 'openFile' : 'openDirectory'],
+      title: type === 'file' ? 'Select Executable' : 'Select Directory'
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    return result.filePaths[0]
+  })
+}
+
 function registerShellIpc(): void {
   function sendToRenderer(channel: string, ...args: unknown[]) {
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -130,8 +161,12 @@ function registerShellIpc(): void {
 }
 
 app.whenReady().then(() => {
+  // Apply saved settings before anything else
+  applySettings(readSettings())
+
   createMenu()
   registerProjectIpc()
+  registerSettingsIpc()
   registerIpcHandlers(sessionManager, () => mainWindow)
   registerShellIpc()
   createWindow()

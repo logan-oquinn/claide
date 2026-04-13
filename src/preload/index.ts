@@ -7,6 +7,7 @@ import type {
   SessionDataEvent,
   SessionLifecycleEvent
 } from '../shared/types'
+import type { ClaideSettings } from '../main/lib/settings-store'
 
 export interface ClaideAPI {
   platform: string
@@ -23,6 +24,11 @@ export interface ClaideAPI {
   onSessionData(callback: (event: SessionDataEvent) => void): () => void
   onSessionLifecycle(callback: (event: SessionLifecycleEvent) => void): () => void
   onProjectState(callback: (state: ProjectState) => void): () => void
+  // Settings
+  getSettings(): Promise<ClaideSettings>
+  saveSettings(settings: ClaideSettings): Promise<void>
+  browseForPath(type: 'file' | 'directory'): Promise<string | null>
+
   // Shell
   createShell(cwd: string): Promise<void>
   sendShellInput(data: string): void
@@ -87,6 +93,19 @@ const api: ClaideAPI = {
     const handler = (_: unknown, state: ProjectState) => callback(state)
     ipcRenderer.on(IPC.PROJECT_STATE, handler)
     return () => ipcRenderer.removeListener(IPC.PROJECT_STATE, handler)
+  },
+
+  // Settings
+  getSettings() {
+    return ipcRenderer.invoke(IPC.SETTINGS_GET)
+  },
+
+  saveSettings(settings: ClaideSettings) {
+    return ipcRenderer.invoke(IPC.SETTINGS_SAVE, settings)
+  },
+
+  browseForPath(type: 'file' | 'directory') {
+    return ipcRenderer.invoke(IPC.SETTINGS_BROWSE, type)
   },
 
   // Shell
