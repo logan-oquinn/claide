@@ -29,6 +29,16 @@ export default function App() {
     return removeListener
   }, [])
 
+  // Listen for menu events from main process
+  useEffect(() => {
+    const cleanups = [
+      window.claide.onMenuEvent('menu:settings', () => setSettingsOpen(true)),
+      window.claide.onMenuEvent('menu:open-project', () => pickAndOpenProject()),
+      window.claide.onMenuEvent('menu:toggle-shell', () => setShellOpen(prev => !prev)),
+    ]
+    return () => cleanups.forEach(fn => fn())
+  }, []) // pickAndOpenProject is stable (useCallback with [openProject])
+
   // Listen for lifecycle changes
   useEffect(() => {
     const removeListener = window.claide.onSessionLifecycle((event) => {

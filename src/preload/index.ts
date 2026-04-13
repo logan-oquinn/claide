@@ -34,6 +34,7 @@ export interface ClaideAPI {
   sendShellInput(data: string): void
   resizeShell(cols: number, rows: number): void
   onShellData(callback: (data: string) => void): () => void
+  onMenuEvent(event: string, callback: () => void): () => void
 }
 
 const api: ClaideAPI = {
@@ -125,6 +126,13 @@ const api: ClaideAPI = {
     const handler = (_: unknown, data: string) => callback(data)
     ipcRenderer.on(IPC.SHELL_DATA, handler)
     return () => ipcRenderer.removeListener(IPC.SHELL_DATA, handler)
+  },
+
+  // Menu events from main process
+  onMenuEvent(event: string, callback: () => void) {
+    const handler = () => callback()
+    ipcRenderer.on(event, handler)
+    return () => ipcRenderer.removeListener(event, handler)
   }
 }
 

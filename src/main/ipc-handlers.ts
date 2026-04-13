@@ -6,6 +6,7 @@ import { discoverSessions } from './lib/session-discovery'
 import { discoverWorktrees, isGitRepo } from './lib/worktree-discovery'
 import { encodePath, normalizeGitPath } from './lib/path-encoding'
 import { readMetadata, writeMetadata, setSessionDisplayName, touchSession } from './lib/claide-store'
+import { addRecentProject } from './lib/recent-projects'
 import { IPC } from '../shared/types'
 import type {
   ProjectState,
@@ -66,6 +67,7 @@ export function registerIpcHandlers(
       }
     }
 
+    addRecentProject(rootPath)
     return buildProjectState(sessionManager, rootPath, currentMetadata)
   })
 
