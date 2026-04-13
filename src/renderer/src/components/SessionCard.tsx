@@ -20,8 +20,10 @@ function hashColor(str: string): string {
   return `hsl(${hue}, 55%, 55%)`
 }
 
-// Generate avatar initials from display name
+// Generate avatar content from display name
 function getInitials(name: string): string {
+  // If the name looks like a UUID prefix (hex chars only), use a terminal icon
+  if (/^[0-9a-f]+$/i.test(name.trim())) return '>'
   const words = name.trim().split(/\s+/)
   if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase()
   return name.substring(0, 2).toUpperCase()
@@ -62,8 +64,13 @@ export default function SessionCard({ session, index, isActive, onClick, onStop,
     >
       {/* Top row: avatar + name + stop */}
       <div className="session-card-row">
-        <div className="session-avatar" style={{ background: avatarColor }}>
-          {initials}
+        <div className="session-avatar-wrapper">
+          <div className="session-avatar" style={{ background: avatarColor }}>
+            {initials}
+          </div>
+          {index <= 8 && (
+            <span className="session-index-badge">{index}</span>
+          )}
         </div>
         <div className="session-card-info">
           <div className="session-card-header">
@@ -95,9 +102,6 @@ export default function SessionCard({ session, index, isActive, onClick, onStop,
             )}
             {!editing && (
               <div className="session-card-actions">
-                {index <= 8 && (
-                  <span className="session-index">{index}</span>
-                )}
                 {onStop && (
                   <button
                     className="session-stop-btn"

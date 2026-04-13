@@ -279,22 +279,44 @@ body {
   align-items: flex-start;
 }
 
+.session-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .session-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: #fff;
-  flex-shrink: 0;
   letter-spacing: 0.3px;
 }
 
 .session-card.stopped .session-avatar {
-  filter: saturate(0.3);
+  filter: saturate(0.3) brightness(0.7);
+}
+
+.session-index-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cascadia Code', 'Consolas', monospace;
 }
 
 .session-card-info {
@@ -328,13 +350,6 @@ body {
   align-items: center;
   gap: 2px;
   flex-shrink: 0;
-}
-
-.session-index {
-  font-size: 9px;
-  color: var(--text-dim);
-  font-weight: 500;
-  font-family: 'Cascadia Code', 'Consolas', monospace;
 }
 
 .session-stop-btn {
