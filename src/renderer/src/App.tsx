@@ -208,20 +208,21 @@ export default function App() {
         onSelectFile={setPreviewFilePath}
       />
 
-      {/* Center: Terminal + Shell + File Preview */}
+      {/* Center: Terminal + Shell (+ File Preview side by side) */}
       <div className="main-content">
         {state.error && (
           <div className="error-banner">{state.error}</div>
         )}
 
-        {previewFilePath && (
-          <FilePreview
-            filePath={previewFilePath}
-            onClose={() => setPreviewFilePath(null)}
-          />
-        )}
+        <div className={`main-split ${previewFilePath ? 'has-preview' : ''}`}>
+          {previewFilePath && (
+            <FilePreview
+              filePath={previewFilePath}
+              onClose={() => setPreviewFilePath(null)}
+            />
+          )}
 
-        <div className="terminal-area">
+          <div className="terminal-area">
           {runningSessions.map(session => (
             <TerminalPanel
               key={session.uuid}
@@ -259,6 +260,7 @@ export default function App() {
             </div>
           )}
         </div>
+        </div>{/* end main-split */}
 
         {shellOpen && state.rootPath && (
           <div className="shell-area">

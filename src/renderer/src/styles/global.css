@@ -790,12 +790,31 @@ body {
   background: var(--bg-secondary);
 }
 
-/* File preview */
+/* Main split: file preview + terminal side by side */
+.main-split {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+.main-split .terminal-area {
+  flex: 1;
+  min-width: 0;
+}
+
+.main-split.has-preview .terminal-area {
+  flex: 1;
+}
+
+/* File preview (left side of split when open) */
 .file-preview {
-  border-bottom: 1px solid var(--border);
-  max-height: 40vh;
+  width: 50%;
+  max-width: 50%;
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
 }
 
 .file-preview-header {
