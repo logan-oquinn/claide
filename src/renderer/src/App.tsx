@@ -34,6 +34,7 @@ export default function App() {
     const cleanups = [
       window.claide.onMenuEvent('menu:settings', () => setSettingsOpen(true)),
       window.claide.onMenuEvent('menu:open-project', () => pickAndOpenProject()),
+      window.claide.onMenuEvent('menu:close-project', () => { setState(null); setActiveSessionUuid(null); setShellOpen(false) }),
       window.claide.onMenuEvent('menu:toggle-shell', () => setShellOpen(prev => !prev)),
     ]
     return () => cleanups.forEach(fn => fn())

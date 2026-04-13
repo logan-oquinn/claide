@@ -33,6 +33,7 @@ function createMenu(): void {
         { type: 'separator' },
         { label: 'Toggle Shell', accelerator: 'CmdOrCtrl+`', click: () => mainWindow?.webContents.send('menu:toggle-shell') },
         { type: 'separator' },
+        { label: 'Close Project', click: () => mainWindow?.webContents.send('menu:close-project') },
         { label: 'Settings...', accelerator: 'CmdOrCtrl+,', click: () => mainWindow?.webContents.send('menu:settings') },
         { type: 'separator' },
         { role: 'quit' }
