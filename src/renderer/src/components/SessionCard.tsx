@@ -61,6 +61,11 @@ export default function SessionCard({ session, index, isActive, onClick, onStop,
     <div
       className={`session-card ${isActive ? 'active' : ''} ${session.lifecycle}`}
       onClick={onClick}
+      onContextMenu={(e) => {
+        e.preventDefault()
+        setEditValue(session.displayName)
+        setEditing(true)
+      }}
     >
       {/* Top row: avatar + name + stop */}
       <div className="session-card-row">

@@ -1,4 +1,5 @@
-import type { ProjectState } from '../../../shared/types'
+import { useState, useMemo } from 'react'
+import type { ProjectState, WorktreeInfo } from '../../../shared/types'
 import WorktreeGroup from './WorktreeGroup'
 
 interface Props {
@@ -14,9 +15,28 @@ interface Props {
 export default function Sidebar({
   state, activeSessionUuid, onSelectSession, onNewSession, onStopSession, onRenameSession, onSwitchProject
 }: Props) {
+  const [showHistory, setShowHistory] = useState(false)
+
   const projectName = state?.rootPath.split(/[/\\]/).pop() || 'No project'
   const worktrees = state?.worktrees || []
   const showHeaders = state?.isGitRepo && worktrees.length > 0
+
+  // Filter worktrees to only show those with running sessions (unless history is toggled)
+  const filteredWorktrees = useMemo((): WorktreeInfo[] => {
+    if (showHistory) return worktrees
+
+    return worktrees
+      .map(wt => ({
+        ...wt,
+        sessions: wt.sessions.filter(s => s.lifecycle === 'running')
+      }))
+      .filter(wt => wt.sessions.length > 0 || !showHeaders)
+  }, [worktrees, showHistory, showHeaders])
+
+  // Count total stopped sessions for the toggle label
+  const stoppedCount = useMemo(() => {
+    return worktrees.reduce((n, wt) => n + wt.sessions.filter(s => s.lifecycle !== 'running').length, 0)
+  }, [worktrees])
 
   // Track cumulative session index for Ctrl+1-8 shortcuts
   let indexOffset = 0
@@ -39,12 +59,12 @@ export default function Sidebar({
           onClick={onSwitchProject}
           title={`${state?.rootPath}\nClick to switch project (Ctrl+O)`}
         >
-          {projectName} <span className="project-switch-hint">\u25BE</span>
+          {projectName} <span className="project-switch-hint">{'\u25BE'}</span>
         </button>
       </div>
 
       <div className="sidebar-sessions">
-        {worktrees.map((wt) => {
+        {filteredWorktrees.map((wt) => {
           const offset = indexOffset
           indexOffset += wt.sessions.length
           return (
@@ -62,14 +82,28 @@ export default function Sidebar({
           )
         })}
 
-        {worktrees.length === 0 && (
-          <div className="worktree-empty" style={{ padding: 16, textAlign: 'center' }}>
+        {filteredWorktrees.length === 0 && !showHistory && (
+          <div className="sidebar-empty">
+            No active sessions
+          </div>
+        )}
+
+        {filteredWorktrees.length === 0 && showHistory && (
+          <div className="sidebar-empty">
             No sessions yet
           </div>
         )}
       </div>
 
       <div className="sidebar-footer">
+        {stoppedCount > 0 && (
+          <button
+            className="btn-history-toggle"
+            onClick={() => setShowHistory(!showHistory)}
+          >
+            {showHistory ? 'Hide' : 'Show'} session history ({stoppedCount})
+          </button>
+        )}
         <button
           className="btn-new-session"
           onClick={() => onNewSession(state?.rootPath || '')}
