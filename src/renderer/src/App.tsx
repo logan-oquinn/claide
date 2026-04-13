@@ -8,14 +8,12 @@ export default function App() {
   const [state, setState] = useState<ProjectState | null>(null)
   const [activeSessionUuid, setActiveSessionUuid] = useState<string | null>(null)
 
-  // Open project on mount (use cwd passed from main or default)
+  // Open project on mount
   useEffect(() => {
-    // Open the current working directory as the project root
     window.claide.openProject(window.claide.cwd).then((projectState) => {
       setState(projectState)
     })
 
-    // Listen for state updates from main process
     const removeListener = window.claide.onProjectState((newState) => {
       setState(newState)
     })
@@ -23,11 +21,9 @@ export default function App() {
     return removeListener
   }, [])
 
-  // Listen for lifecycle changes to update active session
+  // Listen for lifecycle changes
   useEffect(() => {
     const removeListener = window.claide.onSessionLifecycle((event) => {
-      // If the active session errored or stopped, we keep it selected
-      // so the user can see the scrollback
       setState(prev => {
         if (!prev) return prev
         return {
@@ -49,10 +45,11 @@ export default function App() {
     const newState = await window.claide.createSession(state.rootPath)
     setState(newState)
 
-    // Auto-select the newly created running session
-    const newSession = newState.sessions.find(s => s.lifecycle === 'running')
-    if (newSession) {
-      setActiveSessionUuid(newSession.uuid)
+    // Auto-select the newest running session
+    const runningSessions = newState.sessions.filter(s => s.lifecycle === 'running')
+    const newest = runningSessions[runningSessions.length - 1]
+    if (newest) {
+      setActiveSessionUuid(newest.uuid)
     }
   }, [state?.rootPath])
 
@@ -60,7 +57,15 @@ export default function App() {
     setActiveSessionUuid(uuid)
   }, [])
 
+  const handleStopSession = useCallback(async (uuid: string) => {
+    const newState = await window.claide.stopSession(uuid)
+    setState(newState)
+  }, [])
+
+  // All sessions that have a live terminal (running or recently stopped with scrollback)
+  const runningSessions = state?.sessions.filter(s => s.lifecycle === 'running') || []
   const activeSession = state?.sessions.find(s => s.uuid === activeSessionUuid)
+  const hasActiveTerminal = runningSessions.some(s => s.uuid === activeSessionUuid)
 
   return (
     <div className="app-layout">
@@ -69,6 +74,7 @@ export default function App() {
         activeSessionUuid={activeSessionUuid}
         onSelectSession={handleSelectSession}
         onNewSession={handleNewSession}
+        onStopSession={handleStopSession}
       />
 
       <div className="main-content">
@@ -76,12 +82,17 @@ export default function App() {
           <div className="error-banner">{state.error}</div>
         )}
 
-        {activeSession && activeSession.lifecycle === 'running' ? (
+        {/* Render all running terminals, show/hide by active uuid */}
+        {runningSessions.map(session => (
           <TerminalPanel
-            key={activeSessionUuid!}
-            sessionUuid={activeSessionUuid!}
+            key={session.uuid}
+            sessionUuid={session.uuid}
+            visible={session.uuid === activeSessionUuid}
           />
-        ) : (
+        ))}
+
+        {/* Show empty state when no terminal is active */}
+        {!hasActiveTerminal && (
           <div className="empty-state">
             {!state ? (
               <span>Loading...</span>
@@ -93,7 +104,7 @@ export default function App() {
                 </span>
               </>
             ) : activeSession && activeSession.lifecycle === 'stopped' ? (
-              <span>Session stopped. Click &quot;+ New Session&quot; to start a new one.</span>
+              <span>Session stopped. Click to resume or start a new session.</span>
             ) : activeSession && activeSession.lifecycle === 'error' ? (
               <span style={{ color: '#f87171' }}>
                 Session error: {activeSession.error || 'Unknown error'}

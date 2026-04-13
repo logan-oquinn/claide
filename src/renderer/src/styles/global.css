@@ -103,10 +103,47 @@ body {
   padding-left: 9px;
 }
 
+.session-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .session-card .session-name {
   font-size: 13px;
   font-weight: 500;
   color: #d0d0e8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-stop-btn {
+  background: none;
+  border: none;
+  color: #606080;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 4px;
+  line-height: 1;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.session-card:hover .session-stop-btn {
+  opacity: 1;
+}
+
+.session-stop-btn:hover {
+  color: #f87171;
+  background: #3a1a1a;
+}
+
+.session-error-hint {
+  color: #f87171;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .session-card .session-meta {
