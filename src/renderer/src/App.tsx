@@ -11,7 +11,7 @@ export default function App() {
   // Open project on mount (use cwd passed from main or default)
   useEffect(() => {
     // Open the current working directory as the project root
-    window.claide.openProject(process.cwd()).then((projectState) => {
+    window.claide.openProject(window.claide.cwd).then((projectState) => {
       setState(projectState)
     })
 

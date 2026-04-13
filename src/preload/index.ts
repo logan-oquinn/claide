@@ -9,6 +9,7 @@ import type {
 
 export interface ClaideAPI {
   platform: string
+  cwd: string
   openProject(rootPath: string): Promise<ProjectState>
   createSession(cwd: string, name?: string): Promise<ProjectState>
   sendInput(uuid: string, data: string): void
@@ -21,6 +22,7 @@ export interface ClaideAPI {
 
 const api: ClaideAPI = {
   platform: process.platform,
+  cwd: process.cwd(),
 
   openProject(rootPath: string) {
     return ipcRenderer.invoke(IPC.PROJECT_OPEN, rootPath)
