@@ -6,6 +6,7 @@ import TerminalPanel from './components/TerminalPanel'
 import ShellPanel from './components/ShellPanel'
 import WelcomeScreen from './components/WelcomeScreen'
 import SettingsPanel from './components/SettingsPanel'
+import ResizeHandle from './components/ResizeHandle'
 import { flatSessions } from '../../shared/types'
 import type { ProjectState } from '../../shared/types'
 import './styles/global.css'
@@ -17,6 +18,11 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [fileTreeOpen, setFileTreeOpen] = useState(true)
   const [previewFilePath, setPreviewFilePath] = useState<string | null>(null)
+
+  // Resizable panel widths/heights
+  const [fileTreeWidth, setFileTreeWidth] = useState(240)
+  const [sessionPanelWidth, setSessionPanelWidth] = useState(280)
+  const [shellHeight, setShellHeight] = useState(200)
 
   // On mount: check for default project path, auto-open if set
   useEffect(() => {
@@ -202,14 +208,19 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      {/* Left: File Tree (collapsible) */}
+      {/* Left: File Tree (collapsible + resizable) */}
       {fileTreeOpen ? (
-        <FileTree
-          rootPath={state.rootPath}
-          selectedPath={previewFilePath}
-          onSelectFile={setPreviewFilePath}
-          onCollapse={() => setFileTreeOpen(false)}
-        />
+        <>
+          <div style={{ width: fileTreeWidth, minWidth: 150, maxWidth: 500, flexShrink: 0 }}>
+            <FileTree
+              rootPath={state.rootPath}
+              selectedPath={previewFilePath}
+              onSelectFile={setPreviewFilePath}
+              onCollapse={() => setFileTreeOpen(false)}
+            />
+          </div>
+          <ResizeHandle direction="horizontal" onResize={(d) => setFileTreeWidth(w => Math.max(150, Math.min(500, w + d)))} />
+        </>
       ) : (
         <button
           className="file-tree-expand-btn"
@@ -275,16 +286,19 @@ export default function App() {
         </div>{/* end main-split */}
 
         {shellOpen && state.rootPath && (
-          <div className="shell-area">
-            <div className="shell-header">
-              <div className="shell-header-left">
-                <span>Shell</span>
-                <span className="shell-type-label">pwsh</span>
+          <>
+            <ResizeHandle direction="vertical" onResize={(d) => setShellHeight(h => Math.max(80, Math.min(500, h - d)))} />
+            <div className="shell-area" style={{ height: shellHeight }}>
+              <div className="shell-header">
+                <div className="shell-header-left">
+                  <span>Shell</span>
+                  <span className="shell-type-label">pwsh</span>
+                </div>
+                <button className="shell-close-btn" onClick={() => setShellOpen(false)}>x</button>
               </div>
-              <button className="shell-close-btn" onClick={() => setShellOpen(false)}>x</button>
+              <ShellPanel cwd={state.rootPath} />
             </div>
-            <ShellPanel cwd={state.rootPath} />
-          </div>
+          </>
         )}
 
         {!shellOpen && (
@@ -299,7 +313,9 @@ export default function App() {
         )}
       </div>
 
-      {/* Right: Session Panel */}
+      {/* Right: Session Panel (resizable) */}
+      <ResizeHandle direction="horizontal" onResize={(d) => setSessionPanelWidth(w => Math.max(200, Math.min(500, w - d)))} />
+      <div style={{ width: sessionPanelWidth, minWidth: 200, maxWidth: 500, flexShrink: 0 }}>
       <Sidebar
         state={state}
         activeSessionUuid={activeSessionUuid}
@@ -309,6 +325,7 @@ export default function App() {
         onRenameSession={handleRenameSession}
         onSwitchProject={pickAndOpenProject}
       />
+      </div>
 
       {settingsOpen && (
         <SettingsPanel onClose={() => setSettingsOpen(false)} />

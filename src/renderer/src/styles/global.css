@@ -96,15 +96,37 @@ body {
   height: 100vh;
 }
 
+/* Resize handles */
+.resize-handle {
+  flex-shrink: 0;
+  background: transparent;
+  transition: background var(--transition-fast);
+  z-index: 5;
+}
+
+.resize-handle.horizontal {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.resize-handle.vertical {
+  height: 4px;
+  cursor: row-resize;
+}
+
+.resize-handle:hover,
+.resize-handle:active {
+  background: var(--accent-dim);
+}
+
 /* ============================================
    File Tree Panel (left)
    ============================================ */
 
 .file-tree-panel {
-  width: var(--file-tree-width);
-  min-width: var(--file-tree-width);
+  width: 100%;
+  height: 100%;
   background: var(--bg-primary);
-  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -285,10 +307,9 @@ body {
    ============================================ */
 
 .session-panel {
-  width: var(--session-panel-width);
-  min-width: var(--session-panel-width);
+  width: 100%;
+  height: 100%;
   background: var(--bg-primary);
-  border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -953,9 +974,7 @@ body {
    ============================================ */
 
 .shell-area {
-  height: 200px;
-  min-height: 100px;
-  border-top: 1px solid var(--border);
+  min-height: 80px;
   display: flex;
   flex-direction: column;
 }
