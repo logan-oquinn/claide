@@ -1,4 +1,7 @@
-import { execSync } from 'child_process'
+import { execFile } from 'child_process'
+import { promisify } from 'util'
+
+const execFileAsync = promisify(execFile)
 import { existsSync, statSync } from 'fs'
 import { join } from 'path'
 
@@ -77,19 +80,19 @@ export function isLinkedWorktree(dir: string): boolean {
 
 /**
  * Discover all worktrees for the repository containing the given directory.
- * Returns an empty array if not a git repo or git is not available.
- * The first entry is always the main checkout.
+ * Uses execFile (not execSync) to avoid blocking the main thread.
+ * Uses 'git' directly (not via shell) to minimize EDR alerts.
  */
-export function discoverWorktrees(dir: string): Worktree[] {
+export async function discoverWorktrees(dir: string): Promise<Worktree[]> {
   if (!isGitRepo(dir)) return []
 
   try {
-    const raw = execSync('git worktree list --porcelain', {
+    const { stdout } = await execFileAsync('git', ['worktree', 'list', '--porcelain'], {
       cwd: dir,
       encoding: 'utf-8',
       timeout: 5000
     })
-    return parseWorktreeList(raw)
+    return parseWorktreeList(stdout)
   } catch {
     return []
   }
@@ -97,10 +100,8 @@ export function discoverWorktrees(dir: string): Worktree[] {
 
 /**
  * Get the main checkout path for the repository containing the given directory.
- * The main checkout is always the first entry in `git worktree list`.
- * Returns null if not a git repo.
  */
-export function getMainCheckoutPath(dir: string): string | null {
-  const worktrees = discoverWorktrees(dir)
+export async function getMainCheckoutPath(dir: string): Promise<string | null> {
+  const worktrees = await discoverWorktrees(dir)
   return worktrees.length > 0 ? worktrees[0].path : null
 }

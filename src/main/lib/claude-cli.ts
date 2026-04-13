@@ -1,62 +1,62 @@
-import { execSync } from 'child_process'
 import { existsSync } from 'fs'
+import { which } from './which'
 
 let cachedPath: string | null | undefined
+let cachedVersion: string | null | undefined
 let overridePath: string = ''
 
 /**
  * Set a user-configured override path for the Claude CLI.
- * If set to a non-empty valid path, findClaudePath() returns it instead of auto-detecting.
  */
 export function setClaudePathOverride(path: string): void {
   overridePath = path
-  cachedPath = undefined // clear cache so next call re-evaluates
+  cachedPath = undefined
+  cachedVersion = undefined
 }
 
 /**
  * Find the absolute path to the Claude CLI executable.
- * node-pty requires a full path — passing just "claude" causes "File not found".
+ * Uses pure filesystem PATH search — no child process spawning.
+ * node-pty requires a full path; passing just "claude" causes "File not found".
  */
 export function findClaudePath(): string | null {
-  // User override takes priority
   if (overridePath && existsSync(overridePath)) {
     return overridePath
   }
 
   if (cachedPath !== undefined) return cachedPath
 
-  try {
-    const result = execSync('where claude', { encoding: 'utf-8' }).trim()
-    cachedPath = result.split('\n')[0].trim()
-    return cachedPath
-  } catch {
-    cachedPath = null
-    return null
-  }
+  cachedPath = which('claude')
+  return cachedPath
 }
-
-let cachedVersion: string | null | undefined
 
 /**
  * Get Claude CLI version string, or null if not available.
- * Cached for app lifetime — version doesn't change mid-session.
+ * Cached for app lifetime.
+ *
+ * Note: We avoid execSync here. Version is read lazily from the first
+ * session's terminal output by the status parser instead. This function
+ * returns a placeholder until we can parse the real version.
  */
 export function getClaudeVersion(): string | null {
   if (cachedVersion !== undefined) return cachedVersion
 
-  try {
-    const claudePath = findClaudePath()
-    if (!claudePath) { cachedVersion = null; return null }
-    cachedVersion = execSync(`"${claudePath}" --version`, { encoding: 'utf-8' }).trim()
-    return cachedVersion
-  } catch {
-    cachedVersion = null
-    return null
-  }
+  // We can't run `claude --version` without spawning a process.
+  // Return null — the status parser will extract the version from
+  // terminal output once a session is running.
+  cachedVersion = null
+  return null
 }
 
 /**
- * Clear all cached values (useful if user changes settings).
+ * Set the version after it's been parsed from terminal output.
+ */
+export function setClaudeVersion(version: string): void {
+  cachedVersion = version
+}
+
+/**
+ * Clear all cached values.
  */
 export function clearClaudePathCache(): void {
   cachedPath = undefined

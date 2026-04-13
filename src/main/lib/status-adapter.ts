@@ -5,6 +5,7 @@ import { stripAnsi } from './ansi'
  * All fields are optional — the parser is best-effort.
  */
 export interface ParsedStatus {
+  version?: string         // "2.1.104"
   model?: string           // "Sonnet 4.6", "Opus 4.6", "Haiku 4.5"
   contextUsed?: number     // tokens used (e.g., 15000)
   contextTotal?: number    // total context (e.g., 200000)
@@ -55,6 +56,12 @@ export function parseStatusBar(rawOutput: string): ParsedStatus | null {
     const window = stripped.substring(windowStart, windowEnd)
 
     const status: ParsedStatus = {}
+
+    // Version (from startup header or status bar: "v2.1.104" or "Claude Code v2.1.104")
+    const versionMatch = window.match(/v(\d+\.\d+\.\d+)/)
+    if (versionMatch) {
+      status.version = versionMatch[1]
+    }
 
     // Context usage
     status.contextUsed = parseInt(match[1]) * 1000

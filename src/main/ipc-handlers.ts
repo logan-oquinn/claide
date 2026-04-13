@@ -61,7 +61,7 @@ export function registerIpcHandlers(
   })
 
   // project:open — the only place we do expensive discovery
-  ipcMain.handle(IPC.PROJECT_OPEN, (_event, rootPath: string): ProjectState => {
+  ipcMain.handle(IPC.PROJECT_OPEN, async (_event, rootPath: string): Promise<ProjectState> => {
     currentRootPath = rootPath
     currentMetadata = readMetadata(rootPath)
 
@@ -77,7 +77,7 @@ export function registerIpcHandlers(
 
     // Cache expensive discovery results — only refresh on project:open
     cachedIsGitRepo = isGitRepo(rootPath)
-    cachedWorktrees = cachedIsGitRepo ? discoverWorktrees(rootPath) : []
+    cachedWorktrees = cachedIsGitRepo ? await discoverWorktrees(rootPath) : []
 
     addRecentProject(rootPath)
     return buildProjectState(sessionManager, rootPath, currentMetadata)

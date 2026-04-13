@@ -1,7 +1,7 @@
 import * as pty from 'node-pty'
 import { randomUUID } from 'crypto'
 import { EventEmitter } from 'events'
-import { findClaudePath } from './lib/claude-cli'
+import { findClaudePath, setClaudeVersion } from './lib/claude-cli'
 import { parseStatusBar } from './lib/status-adapter'
 import type { SessionInfo, SessionLifecycle, ParsedStatus } from '../shared/types'
 
@@ -228,6 +228,10 @@ export class SessionManager extends EventEmitter {
     const parsed = parseStatusBar(session.outputBuffer)
     if (parsed) {
       session.parsedStatus = parsed
+      // Cache the version globally so the sidebar can show it
+      if (parsed.version) {
+        setClaudeVersion(parsed.version)
+      }
     }
   }
 

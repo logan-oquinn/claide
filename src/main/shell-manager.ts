@@ -1,7 +1,6 @@
 import * as pty from 'node-pty'
-import { execSync } from 'child_process'
-import { existsSync } from 'fs'
 import { EventEmitter } from 'events'
+import { findShellPath } from './lib/which'
 
 /**
  * Manages a single user shell PTY (PowerShell).
@@ -13,48 +12,22 @@ import { EventEmitter } from 'events'
 export class ShellManager extends EventEmitter {
   private shell: pty.IPty | null = null
   private shellPathOverride: string = ''
-  private cachedShellPath: string | null = null
 
   /**
    * Set a user-configured override path for the shell.
    */
   setShellPathOverride(path: string): void {
     this.shellPathOverride = path
-    this.cachedShellPath = null // invalidate cache
-  }
-
-  /**
-   * Find the best available shell (full absolute path required by node-pty).
-   * Cached after first lookup.
-   */
-  private findShell(): string {
-    if (this.shellPathOverride && existsSync(this.shellPathOverride)) {
-      return this.shellPathOverride
-    }
-
-    if (this.cachedShellPath) return this.cachedShellPath
-
-    try {
-      this.cachedShellPath = execSync('where pwsh', { encoding: 'utf-8' }).trim().split('\n')[0].trim()
-      return this.cachedShellPath
-    } catch { /* not found */ }
-
-    try {
-      this.cachedShellPath = execSync('where powershell', { encoding: 'utf-8' }).trim().split('\n')[0].trim()
-      return this.cachedShellPath
-    } catch { /* not found */ }
-
-    this.cachedShellPath = process.env.COMSPEC || 'C:\\Windows\\System32\\cmd.exe'
-    return this.cachedShellPath
   }
 
   /**
    * Spawn the shell PTY if not already running.
+   * Uses pure filesystem PATH search — no child process spawning.
    */
   create(cwd: string): void {
     if (this.shell) return
 
-    const shellCmd = this.findShell()
+    const shellCmd = findShellPath(this.shellPathOverride)
 
     this.shell = pty.spawn(shellCmd, [], {
       name: 'xterm-256color',
