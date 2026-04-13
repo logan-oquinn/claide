@@ -13,21 +13,19 @@ export class ShellManager extends EventEmitter {
   private shell: pty.IPty | null = null
 
   /**
-   * Find the best available shell.
+   * Find the best available shell (full absolute path required by node-pty).
    * Order: pwsh → powershell.exe → cmd.exe
    */
   private findShell(): string {
     try {
-      execSync('where pwsh', { encoding: 'utf-8' })
-      return 'pwsh'
+      return execSync('where pwsh', { encoding: 'utf-8' }).trim().split('\n')[0].trim()
     } catch { /* not found */ }
 
     try {
-      execSync('where powershell', { encoding: 'utf-8' })
-      return 'powershell.exe'
+      return execSync('where powershell', { encoding: 'utf-8' }).trim().split('\n')[0].trim()
     } catch { /* not found */ }
 
-    return process.env.COMSPEC || 'cmd.exe'
+    return process.env.COMSPEC || 'C:\\Windows\\System32\\cmd.exe'
   }
 
   /**
