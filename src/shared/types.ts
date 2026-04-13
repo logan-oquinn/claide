@@ -39,6 +39,8 @@ export function flatSessions(state: ProjectState): SessionInfo[] {
 export const IPC = {
   // Renderer → Main (invoke)
   PROJECT_OPEN: 'project:open',
+  PROJECT_PICK: 'project:pick',
+  PROJECT_RECENT: 'project:recent',
   SESSION_CREATE: 'session:create',
   SESSION_INPUT: 'session:input',
   SESSION_RESIZE: 'session:resize',
@@ -87,6 +89,12 @@ export interface SessionStopPayload {
 export interface SessionRenamePayload {
   uuid: string
   displayName: string
+}
+
+export interface RecentProject {
+  path: string
+  name: string
+  lastOpenedAt: string
 }
 
 export interface ShellResizePayload {

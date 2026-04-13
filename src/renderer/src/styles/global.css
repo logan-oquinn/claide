@@ -154,13 +154,34 @@ body {
   font-weight: 500;
 }
 
-.sidebar-header .project-path {
+.project-path-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   color: var(--text-tertiary);
   margin-top: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 0;
+  font-family: inherit;
+  text-align: left;
+  transition: color var(--transition);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 100%;
+}
+
+.project-path-btn:hover {
+  color: var(--text-secondary);
+}
+
+.project-switch-hint {
+  font-size: 9px;
+  color: var(--text-dim);
+  flex-shrink: 0;
 }
 
 .sidebar-sessions {
@@ -651,5 +672,112 @@ body {
   border-bottom: 1px solid rgba(248, 113, 113, 0.2);
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+/* ============================================
+   Welcome Screen
+   ============================================ */
+
+.welcome-screen {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+}
+
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 400px;
+  width: 100%;
+  padding: 40px;
+}
+
+.welcome-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.welcome-subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+}
+
+.welcome-open-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent-dim);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all var(--transition);
+}
+
+.welcome-open-btn:hover {
+  background: var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.welcome-shortcut {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+}
+
+.welcome-recent {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.welcome-recent-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.welcome-recent-item {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition);
+  font-family: inherit;
+}
+
+.welcome-recent-item:hover {
+  background: var(--bg-hover);
+}
+
+.welcome-recent-name {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.welcome-recent-path {
+  font-size: 10px;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 2px;
   gap: 8px;
 }

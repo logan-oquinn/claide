@@ -1,10 +1,11 @@
-import { app, BrowserWindow, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, dialog } from 'electron'
 import { join } from 'path'
 import { SessionManager } from './session-manager'
 import { ShellManager } from './shell-manager'
 import { registerIpcHandlers } from './ipc-handlers'
+import { readRecentProjects, addRecentProject } from './lib/recent-projects'
 import { IPC } from '../shared/types'
-import type { ShellResizePayload } from '../shared/types'
+import type { ShellResizePayload, RecentProject } from '../shared/types'
 
 let mainWindow: BrowserWindow | null = null
 const sessionManager = new SessionManager()
@@ -15,6 +16,12 @@ function createMenu(): void {
     {
       label: 'File',
       submenu: [
+        {
+          label: 'Open Project...',
+          accelerator: 'CmdOrCtrl+O',
+          click: () => mainWindow?.webContents.send('menu:open-project')
+        },
+        { type: 'separator' },
         { label: 'New Session', accelerator: 'CmdOrCtrl+N', click: () => mainWindow?.webContents.send('menu:new-session') },
         { type: 'separator' },
         { label: 'Toggle Shell', accelerator: 'CmdOrCtrl+`', click: () => mainWindow?.webContents.send('menu:toggle-shell') },
@@ -60,7 +67,7 @@ function createWindow(): void {
     minWidth: 800,
     minHeight: 500,
     title: 'Claide',
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#141425',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -75,6 +82,26 @@ function createWindow(): void {
 
   mainWindow.on('closed', () => {
     mainWindow = null
+  })
+}
+
+function registerProjectIpc(): void {
+  // Pick a folder via native dialog
+  ipcMain.handle(IPC.PROJECT_PICK, async (): Promise<string | null> => {
+    if (!mainWindow) return null
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory'],
+      title: 'Open Project'
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+    const picked = result.filePaths[0]
+    addRecentProject(picked)
+    return picked
+  })
+
+  // Get recent projects list
+  ipcMain.handle(IPC.PROJECT_RECENT, (): RecentProject[] => {
+    return readRecentProjects()
   })
 }
 
@@ -104,6 +131,7 @@ function registerShellIpc(): void {
 
 app.whenReady().then(() => {
   createMenu()
+  registerProjectIpc()
   registerIpcHandlers(sessionManager, () => mainWindow)
   registerShellIpc()
   createWindow()

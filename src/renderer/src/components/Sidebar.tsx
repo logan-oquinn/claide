@@ -8,10 +8,11 @@ interface Props {
   onNewSession: (cwd: string) => void
   onStopSession: (uuid: string) => void
   onRenameSession: (uuid: string, newName: string) => void
+  onSwitchProject: () => void
 }
 
 export default function Sidebar({
-  state, activeSessionUuid, onSelectSession, onNewSession, onStopSession, onRenameSession
+  state, activeSessionUuid, onSelectSession, onNewSession, onStopSession, onRenameSession, onSwitchProject
 }: Props) {
   const projectName = state?.rootPath.split(/[/\\]/).pop() || 'No project'
   const worktrees = state?.worktrees || []
@@ -33,9 +34,13 @@ export default function Sidebar({
             <span className="version-pill">{state.claudeVersion.split(' ')[0]}</span>
           )}
         </div>
-        <div className="project-path" title={state?.rootPath}>
-          {projectName}
-        </div>
+        <button
+          className="project-path-btn"
+          onClick={onSwitchProject}
+          title={`${state?.rootPath}\nClick to switch project (Ctrl+O)`}
+        >
+          {projectName} <span className="project-switch-hint">\u25BE</span>
+        </button>
       </div>
 
       <div className="sidebar-sessions">

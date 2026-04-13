@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IPC } from '../shared/types'
 import type {
   ProjectState,
+  RecentProject,
   SessionCreatePayload,
   SessionDataEvent,
   SessionLifecycleEvent
@@ -11,6 +12,8 @@ export interface ClaideAPI {
   platform: string
   cwd: string
   openProject(rootPath: string): Promise<ProjectState>
+  pickProject(): Promise<string | null>
+  getRecentProjects(): Promise<RecentProject[]>
   createSession(cwd: string, name?: string): Promise<ProjectState>
   resumeSession(uuid: string, cwd: string): Promise<ProjectState>
   sendInput(uuid: string, data: string): void
@@ -33,6 +36,14 @@ const api: ClaideAPI = {
 
   openProject(rootPath: string) {
     return ipcRenderer.invoke(IPC.PROJECT_OPEN, rootPath)
+  },
+
+  pickProject() {
+    return ipcRenderer.invoke(IPC.PROJECT_PICK)
+  },
+
+  getRecentProjects() {
+    return ipcRenderer.invoke(IPC.PROJECT_RECENT)
   },
 
   createSession(cwd: string, name?: string) {

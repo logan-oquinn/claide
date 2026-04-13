@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Sidebar from './components/Sidebar'
 import TerminalPanel from './components/TerminalPanel'
 import ShellPanel from './components/ShellPanel'
+import WelcomeScreen from './components/WelcomeScreen'
 import { flatSessions } from '../../shared/types'
 import type { ProjectState } from '../../shared/types'
 import './styles/global.css'
@@ -11,9 +12,8 @@ export default function App() {
   const [activeSessionUuid, setActiveSessionUuid] = useState<string | null>(null)
   const [shellOpen, setShellOpen] = useState(false)
 
-  // Open project on mount
+  // Listen for project state updates
   useEffect(() => {
-    window.claide.openProject(window.claide.cwd).then(setState)
     const removeListener = window.claide.onProjectState(setState)
     return removeListener
   }, [])
@@ -39,7 +39,21 @@ export default function App() {
     return removeListener
   }, [])
 
-  // --- Callbacks (defined before useEffect that references them) ---
+  // --- Project management ---
+
+  const openProject = useCallback(async (path: string) => {
+    const projectState = await window.claide.openProject(path)
+    setState(projectState)
+    setActiveSessionUuid(null)
+    setShellOpen(false)
+  }, [])
+
+  const pickAndOpenProject = useCallback(async () => {
+    const path = await window.claide.pickProject()
+    if (path) openProject(path)
+  }, [openProject])
+
+  // --- Session callbacks ---
 
   const handleNewSession = useCallback(async (cwd: string) => {
     if (!cwd) return
@@ -84,19 +98,30 @@ export default function App() {
   const hasActiveTerminal = runningSessions.some(s => s.uuid === activeSessionUuid)
   const activeSession = allSessions.find(s => s.uuid === activeSessionUuid)
 
-  // --- Keyboard shortcuts (after all callbacks are defined) ---
+  // --- Keyboard shortcuts ---
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Ctrl+O — open project
+      if (e.ctrlKey && e.key === 'o') {
+        e.preventDefault()
+        pickAndOpenProject()
+        return
+      }
+
+      // Ctrl+` — toggle shell
       if (e.ctrlKey && e.key === '`') {
         e.preventDefault()
         setShellOpen(prev => !prev)
         return
       }
 
+      // Only session shortcuts when a project is open
+      if (!state) return
+
       if (e.ctrlKey && e.key === 'n') {
         e.preventDefault()
-        if (state?.claudeAvailable) {
+        if (state.claudeAvailable) {
           const activeWt = state.worktrees.find(wt =>
             wt.sessions.some(s => s.uuid === activeSessionUuid)
           )
@@ -127,7 +152,15 @@ export default function App() {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [state, activeSessionUuid, allSessions, handleNewSession])
+  }, [state, activeSessionUuid, allSessions, handleNewSession, pickAndOpenProject])
+
+  // --- Welcome screen (no project open) ---
+
+  if (!state) {
+    return <WelcomeScreen onOpenProject={openProject} onPickProject={pickAndOpenProject} />
+  }
+
+  // --- Main app layout ---
 
   return (
     <div className="app-layout">
@@ -138,10 +171,11 @@ export default function App() {
         onNewSession={handleNewSession}
         onStopSession={handleStopSession}
         onRenameSession={handleRenameSession}
+        onSwitchProject={pickAndOpenProject}
       />
 
       <div className="main-content">
-        {state?.error && (
+        {state.error && (
           <div className="error-banner">{state.error}</div>
         )}
 
@@ -156,9 +190,7 @@ export default function App() {
 
           {!hasActiveTerminal && (
             <div className="empty-state">
-              {!state ? (
-                <span className="empty-state-title">Loading...</span>
-              ) : !state.claudeAvailable ? (
+              {!state.claudeAvailable ? (
                 <>
                   <span className="empty-state-title">Claude CLI not found</span>
                   <span className="empty-state-hint">
@@ -186,7 +218,7 @@ export default function App() {
           )}
         </div>
 
-        {shellOpen && state?.rootPath && (
+        {shellOpen && state.rootPath && (
           <div className="shell-area">
             <div className="shell-header">
               <div className="shell-header-left">
