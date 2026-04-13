@@ -3,4 +3,5 @@ out/
 dist/
 .claide/
 *.log
-documentation/spike-results/
+documentation/spike-results/*
+!documentation/spike-results/milestone-0-findings.md

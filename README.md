@@ -2,7 +2,7 @@
 
 A Windows-first desktop app for managing multiple [Claude Code](https://claude.ai/code) sessions across git worktrees.
 
-Inspired by [Scape](https://scape.work) (macOS), Claide brings parallel Claude Code session management to Windows. It is a **local control plane** — not an IDE, not a cloud service, not a voice assistant.
+A **local control plane** for parallel Claude Code session management on Windows — not an IDE, not a cloud service, not a voice assistant.
 
 ## What It Does
 
