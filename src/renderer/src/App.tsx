@@ -70,6 +70,11 @@ export default function App() {
     setState(newState)
   }, [])
 
+  const handleRenameSession = useCallback(async (uuid: string, newName: string) => {
+    const newState = await window.claide.renameSession(uuid, newName)
+    setState(newState)
+  }, [])
+
   // All sessions that have a live terminal (running or recently stopped with scrollback)
   const runningSessions = state?.sessions.filter(s => s.lifecycle === 'running') || []
   const activeSession = state?.sessions.find(s => s.uuid === activeSessionUuid)
@@ -83,6 +88,7 @@ export default function App() {
         onSelectSession={handleSelectSession}
         onNewSession={handleNewSession}
         onStopSession={handleStopSession}
+        onRenameSession={handleRenameSession}
       />
 
       <div className="main-content">

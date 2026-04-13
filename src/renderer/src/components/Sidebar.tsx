@@ -7,9 +7,10 @@ interface Props {
   onSelectSession: (uuid: string) => void
   onNewSession: () => void
   onStopSession: (uuid: string) => void
+  onRenameSession: (uuid: string, newName: string) => void
 }
 
-export default function Sidebar({ state, activeSessionUuid, onSelectSession, onNewSession, onStopSession }: Props) {
+export default function Sidebar({ state, activeSessionUuid, onSelectSession, onNewSession, onStopSession, onRenameSession }: Props) {
   const projectName = state?.rootPath.split(/[/\\]/).pop() || 'No project'
   const sessions = state?.sessions || []
 
@@ -30,6 +31,7 @@ export default function Sidebar({ state, activeSessionUuid, onSelectSession, onN
             isActive={session.uuid === activeSessionUuid}
             onClick={() => onSelectSession(session.uuid)}
             onStop={session.lifecycle === 'running' ? () => onStopSession(session.uuid) : undefined}
+            onRename={(newName) => onRenameSession(session.uuid, newName)}
           />
         ))}
 

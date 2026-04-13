@@ -140,6 +140,24 @@ body {
   background: #3a1a1a;
 }
 
+.session-rename-input {
+  background: #1a1a2e;
+  border: 1px solid #6c63ff;
+  color: #d0d0e8;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 1px 4px;
+  border-radius: 3px;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+}
+
+.session-time {
+  font-size: 10px;
+  color: #606080;
+}
+
 .session-error-hint {
   color: #f87171;
   font-size: 11px;
