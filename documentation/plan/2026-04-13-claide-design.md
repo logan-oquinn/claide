@@ -343,7 +343,7 @@ Channels for Milestones 1-3:
 - `project:open` — renderer requests opening a directory. Main process runs full discovery and reconciliation.
 - `project:state` — main → renderer. Single canonical payload: `{ worktrees: [{ path, branch, status, sessions: [{ uuid, displayName, color, lifecycle, ... }] }] }`. This is the only source of truth for the session list UI.
 - `session:create` — create a new Claude session in a specified worktree path. Returns updated `project:state`.
-- `session:resume` — resume a saved session by UUID. Returns updated `project:state`.
+- `session:resume` — resume a saved session by UUID. Main process resolves the UUID to its discovered worktree path and spawns `claude --resume <uuid>` with that worktree path as the PTY cwd. Returns updated `project:state`.
 - `session:stop` — stop a running session. Returns updated `project:state`.
 - `session:rename` — update display name in Claide metadata. Returns updated `project:state`.
 - `session:input` — forward keyboard input to a session's PTY.
@@ -376,11 +376,13 @@ Claide uses this UUID as the primary key for all session operations: resume, ren
 
 ### Metadata File Location
 
-`.claide/sessions.json` lives at the **git repo root** (the main checkout), not inside individual worktrees.
+`.claide/sessions.json` lives at the **main checkout working tree**, not inside individual worktrees.
+
+**How to find the main checkout path:** `git rev-parse --git-common-dir` returns the shared `.git` directory (e.g., `C:/Users/Foo/repo/.git`), not the working tree. To get the main checkout: take the first `worktree` entry from `git worktree list --porcelain` — git always lists the main checkout first. Alternatively, if `--git-common-dir` ends with `/.git`, its parent is the main checkout.
 
 Rationale:
 
-- There is exactly one repo root per git repository, discoverable from any worktree via `git rev-parse --git-common-dir`.
+- There is exactly one main checkout per git repository, always the first entry in `git worktree list`.
 - Worktree collapse/expand state, session display names, and ordering are all repo-scoped concerns.
 - If the metadata file lived per-worktree, opening the main checkout versus a linked worktree would show different display names for the same sessions.
 - If the opened directory is not a git repo, `.claide/sessions.json` lives in the opened directory itself (single-root fallback).
@@ -413,11 +415,11 @@ Sessions are keyed by Claude session UUID. Worktree UI state is keyed by the enc
 On startup:
 
 1. Resolve the opened directory to a canonical Windows path (normalize separators, drive-letter casing, resolve symlinks).
-2. Determine the repo root: run `git rev-parse --git-common-dir`. If not a git repo, use the opened directory as the sole root.
+2. Determine the main checkout: parse the first `worktree` entry from `git worktree list --porcelain` (git always lists the main checkout first). If not a git repo, use the opened directory as the sole root.
 3. Enumerate all worktrees via `git worktree list --porcelain`. If not a git repo, treat the opened directory as the only "worktree."
 4. For each worktree, compute the Claude session namespace by applying path encoding (replace `\`, `/`, `:`, `.` with `-`) to the worktree's absolute path.
 5. Scan `~/.claude/projects/<namespace>/` for `*.jsonl` files. Each filename (minus `.jsonl`) is a session UUID.
-6. Read `.claide/sessions.json` from the repo root (or opened directory for non-git).
+6. Read `.claide/sessions.json` from the main checkout path (or opened directory for non-git).
 7. For each discovered session UUID, apply matching Claide display metadata if present.
 8. Keep orphaned Claide entries (UUIDs with no matching JSONL) as stale metadata. Surface them dimmed in the UI until the user clears them.
 9. Group sessions by worktree for the renderer.
