@@ -13,8 +13,21 @@ export default function WelcomeScreen({ onOpenProject, onPickProject }: Props) {
     window.claide.getRecentProjects().then(setRecent)
   }, [])
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const files = e.dataTransfer.files
+    if (files.length > 0) {
+      const path = (files[0] as File & { path: string }).path
+      if (path) onOpenProject(path)
+    }
+  }
+
   return (
-    <div className="welcome-screen">
+    <div
+      className="welcome-screen"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={handleDrop}
+    >
       <div className="welcome-content">
         <h1 className="welcome-title">Claide</h1>
         <p className="welcome-subtitle">Claude Code session control plane</p>
@@ -22,7 +35,7 @@ export default function WelcomeScreen({ onOpenProject, onPickProject }: Props) {
         <button className="welcome-open-btn" onClick={onPickProject}>
           Open Project
         </button>
-        <span className="welcome-shortcut">Ctrl+O</span>
+        <span className="welcome-shortcut">Ctrl+O or drag a folder here</span>
 
         {recent.length > 0 && (
           <div className="welcome-recent">
