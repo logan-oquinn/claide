@@ -261,11 +261,11 @@ body {
 }
 
 .session-card.stopped {
-  opacity: 0.55;
+  opacity: 0.7;
 }
 
 .session-card.stopped:hover {
-  opacity: 0.85;
+  opacity: 1;
 }
 
 .session-card.error {
@@ -298,7 +298,7 @@ body {
 }
 
 .session-card.stopped .session-avatar {
-  filter: saturate(0.3) brightness(0.7);
+  filter: saturate(0.4);
 }
 
 .session-index-badge {
@@ -317,6 +317,12 @@ body {
   align-items: center;
   justify-content: center;
   font-family: 'Cascadia Code', 'Consolas', monospace;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.session-card:hover .session-index-badge {
+  opacity: 1;
 }
 
 .session-card-info {

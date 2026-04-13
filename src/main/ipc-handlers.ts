@@ -154,15 +154,8 @@ function buildProjectState(
     : [{ path: rootPath, head: '', branch: null, isDetached: false, isPrunable: false, isLocked: false }]
 
   const runningSessions = sessionManager.listSessions()
-  const runningByCwd = new Map<string, typeof runningSessions>()
-  for (const s of runningSessions) {
-    const session = sessionManager.getSession(s.uuid)
-    // Group running sessions by their cwd (which maps to a worktree)
-    // For now, new sessions use the worktree path as cwd
-    const cwd = s.uuid // We need the actual cwd — let's use a different approach
-  }
 
-  // Simpler approach: for each worktree, compute namespace and find sessions
+  // For each worktree, compute namespace and find sessions
   const worktrees: WorktreeInfo[] = worktreePaths.map((wt, index) => {
     const normalizedPath = wt.path.replace(/\//g, '\\')
     const namespace = encodePath(normalizedPath)
@@ -181,11 +174,12 @@ function buildProjectState(
     })
 
     // Saved sessions not currently running
+    let sessionCounter = 0
     const savedSessions = discovered
       .filter(d => !runningUuids.has(d.uuid))
       .map(d => ({
         uuid: d.uuid,
-        displayName: metadata.sessions[d.uuid]?.displayName || d.uuid.substring(0, 8),
+        displayName: metadata.sessions[d.uuid]?.displayName || `Session ${++sessionCounter}`,
         lifecycle: 'stopped' as const,
         lastActiveAt: metadata.sessions[d.uuid]?.lastActiveAt,
       }))
