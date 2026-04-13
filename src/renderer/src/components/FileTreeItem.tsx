@@ -41,7 +41,7 @@ export default function FileTreeItem({ entry, depth, rootPath, selectedPath, onS
       >
         {entry.isDirectory ? (
           <span className="file-tree-icon folder">
-            {loading ? '\u00b7' : expanded ? '\u25bc' : '\u25b6'}
+            {loading ? '\u23f3' : expanded ? '\ud83d\udcc2' : '\ud83d\udcc1'}
           </span>
         ) : (
           <span className="file-tree-icon">{getFileIcon(entry.name)}</span>
@@ -63,18 +63,41 @@ export default function FileTreeItem({ entry, depth, rootPath, selectedPath, onS
 }
 
 function getFileIcon(name: string): string {
-  const ext = name.split('.').pop()?.toLowerCase()
+  const lower = name.toLowerCase()
+  const ext = lower.split('.').pop()
+
+  // Special filenames
+  if (lower === 'package.json') return '\ud83d\udce6'
+  if (lower === 'tsconfig.json' || lower.startsWith('tsconfig.')) return '\u2699\ufe0f'
+  if (lower === '.gitignore' || lower === '.gitattributes') return '\ud83d\udc19'
+  if (lower === '.env' || lower.startsWith('.env.')) return '\ud83d\udd10'
+  if (lower === 'dockerfile' || lower === 'docker-compose.yml') return '\ud83d\udc33'
+  if (lower === 'readme.md') return '\ud83d\udcd6'
+  if (lower === 'license' || lower === 'license.md') return '\ud83d\udcdc'
+  if (lower === 'claude.md' || lower === '.claude') return '\ud83e\udd16'
+
   switch (ext) {
-    case 'ts': case 'tsx': return 'TS'
-    case 'js': case 'jsx': return 'JS'
-    case 'json': return '{}'
-    case 'md': return 'M'
-    case 'css': return '#'
-    case 'html': return '<>'
-    case 'yml': case 'yaml': return 'Y'
-    case 'py': return 'Py'
-    case 'rs': return 'Rs'
-    case 'go': return 'Go'
-    default: return '\u2022'
+    case 'ts': case 'tsx': return '\ud83d\udcd8'
+    case 'js': case 'jsx': return '\ud83d\udcd9'
+    case 'json': return '\ud83d\udcca'
+    case 'md': case 'mdx': return '\ud83d\udcdd'
+    case 'css': case 'scss': case 'less': return '\ud83c\udfa8'
+    case 'html': case 'htm': return '\ud83c\udf10'
+    case 'yml': case 'yaml': return '\u2699\ufe0f'
+    case 'py': return '\ud83d\udc0d'
+    case 'rs': return '\ud83e\udda0'
+    case 'go': return '\ud83d\udc39'
+    case 'java': case 'kt': return '\u2615'
+    case 'cs': case 'csproj': case 'sln': return '\ud83d\udfe3'
+    case 'sql': return '\ud83d\uddc3\ufe0f'
+    case 'sh': case 'bash': case 'zsh': case 'ps1': return '\ud83d\udcbb'
+    case 'png': case 'jpg': case 'jpeg': case 'gif': case 'svg': case 'ico': return '\ud83d\uddbc\ufe0f'
+    case 'lock': return '\ud83d\udd12'
+    case 'log': return '\ud83d\udcbf'
+    case 'xml': return '\ud83d\udcc4'
+    case 'env': return '\ud83d\udd10'
+    case 'toml': case 'ini': case 'cfg': return '\u2699\ufe0f'
+    case 'test': case 'spec': return '\ud83e\uddea'
+    default: return '\ud83d\udcc4'
   }
 }

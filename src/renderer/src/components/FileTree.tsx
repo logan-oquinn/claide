@@ -6,9 +6,10 @@ interface Props {
   rootPath: string
   onSelectFile: (path: string) => void
   selectedPath: string | null
+  onCollapse: () => void
 }
 
-export default function FileTree({ rootPath, onSelectFile, selectedPath }: Props) {
+export default function FileTree({ rootPath, onSelectFile, selectedPath, onCollapse }: Props) {
   const [entries, setEntries] = useState<FileTreeEntry[]>([])
   const [filter, setFilter] = useState('')
 
@@ -30,6 +31,13 @@ export default function FileTree({ rootPath, onSelectFile, selectedPath }: Props
     <div className="file-tree-panel">
       <div className="file-tree-header">
         <h2>{projectName}</h2>
+        <button
+          className="file-tree-collapse-btn"
+          onClick={onCollapse}
+          title="Hide file tree"
+        >
+          {'\u2039'}
+        </button>
       </div>
       <input
         className="file-tree-filter"

@@ -15,6 +15,7 @@ export default function App() {
   const [activeSessionUuid, setActiveSessionUuid] = useState<string | null>(null)
   const [shellOpen, setShellOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [fileTreeOpen, setFileTreeOpen] = useState(true)
   const [previewFilePath, setPreviewFilePath] = useState<string | null>(null)
 
   // On mount: check for default project path, auto-open if set
@@ -201,12 +202,23 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      {/* Left: File Tree */}
-      <FileTree
-        rootPath={state.rootPath}
-        selectedPath={previewFilePath}
-        onSelectFile={setPreviewFilePath}
-      />
+      {/* Left: File Tree (collapsible) */}
+      {fileTreeOpen ? (
+        <FileTree
+          rootPath={state.rootPath}
+          selectedPath={previewFilePath}
+          onSelectFile={setPreviewFilePath}
+          onCollapse={() => setFileTreeOpen(false)}
+        />
+      ) : (
+        <button
+          className="file-tree-expand-btn"
+          onClick={() => setFileTreeOpen(true)}
+          title="Show file tree"
+        >
+          {'\ud83d\udcc1'}
+        </button>
+      )}
 
       {/* Center: Terminal + Shell (+ File Preview side by side) */}
       <div className="main-content">
